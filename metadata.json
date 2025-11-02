@@ -1,5 +1,5 @@
 {
-  "name": "LolliPad - Launchpad & Beat Making Studio",
+  "name": "LolliPad - AI Music Launchpad & Beat Making Studio",
   "description": "A web-based music studio with an AI-powered launchpad for generating melodic textures and a 16-step beatmaker for creating drum patterns. Control it all with your MIDI device.",
   "requestFramePermissions": [],
   "prompt": ""

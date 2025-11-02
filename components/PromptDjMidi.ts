@@ -20,8 +20,21 @@ import { DrumMachine } from '../utils/AudioAnalyser';
 
 const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const SCALES = ['Major', 'Minor', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Locrian'];
-const ALL_INSTRUMENTS: (keyof MusicStudio['patterns'])[] = ['kick', 'snare', 'hat', 'clap', 'tom', 'cymbal'];
-const KITS = ['Electronic', '808', 'Acoustic'];
+const ALL_INSTRUMENTS: Instrument[] = ['kick', 'snare', 'hat', 'clap', 'tom', 'cymbal'];
+const KITS = ['Electronic', '808', 'Acoustic', 'Rock', 'Jazz', 'Funk', 'Brush', 'Studio'];
+type Instrument = 'kick' | 'snare' | 'hat' | 'clap' | 'tom' | 'cymbal';
+
+
+const KIT_COLORS: { [key in (typeof KITS)[number]]: { [key in Instrument]: string } } = {
+  'Electronic': { kick: '#ff25f6', snare: '#2af6de', hat: '#9900ff', clap: '#d8ff3e', tom: '#5200ff', cymbal: '#3dffab' },
+  '808':        { kick: '#FF6F61', snare: '#FFD166', hat: '#FFF8B8', clap: '#FFD166', tom: '#F08A5D', cymbal: '#EEEEEE' },
+  'Acoustic':   { kick: '#D2691E', snare: '#CD853F', hat: '#BDB76B', clap: '#F4A460', tom: '#8B4513', cymbal: '#DAA520' },
+  'Rock':       { kick: '#D92027', snare: '#EBEBEB', hat: '#FFC947', clap: '#EBEBEB', tom: '#4A4A4A', cymbal: '#F5A623' },
+  'Jazz':       { kick: '#4A90E2', snare: '#50E3C2', hat: '#F8E71C', clap: '#50E3C2', tom: '#BD10E0', cymbal: '#B8E986' },
+  'Funk':       { kick: '#F56565', snare: '#ECC94B', hat: '#48BB78', clap: '#ECC94B', tom: '#9F7AEA', cymbal: '#ED8936' },
+  'Brush':      { kick: '#A4C8F5', snare: '#F5D491', hat: '#C8E6C9', clap: '#F5D491', tom: '#BCAAA4', cymbal: '#E6EE9C' },
+  'Studio':     { kick: '#4285F4', snare: '#FBBC05', hat: '#34A853', clap: '#FBBC05', tom: '#EA4335', cymbal: '#CCCCCC' }
+};
 
 const F = false;
 const T = true;
@@ -320,7 +333,7 @@ export class MusicStudio extends LitElement {
       justify-content: flex-end;
     }
 
-    .beatmaker-tempo-control {
+    .beatmaker-tempo-control, .beatmaker-volume-control {
       width: 100%;
     }
 
@@ -330,7 +343,7 @@ export class MusicStudio extends LitElement {
       gap: 8px;
     }
 
-    .tempo-control .tempo-value {
+    .control-value {
       font-family: monospace;
       font-size: 1em;
       width: 70px;
@@ -359,6 +372,16 @@ export class MusicStudio extends LitElement {
     }
     .tempo-btn:hover {
         background: rgba(255, 255, 255, 0.2);
+    }
+
+    .beatmaker-volume-control {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .beatmaker-volume-control input[type="range"] {
+        flex-grow: 1;
     }
 
     .sequencer-container {
@@ -404,9 +427,11 @@ export class MusicStudio extends LitElement {
       font-weight: 600;
       font-size: 0.9em;
       text-transform: capitalize;
-      background: rgba(255, 255, 255, 0.08);
       border-radius: 6px;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #fff;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+      transition: background-color 0.3s;
     }
 
     .step {
@@ -425,9 +450,9 @@ export class MusicStudio extends LitElement {
     }
 
     .step.active {
-      background-color: #9900ff;
-      border-color: #c78eff;
-      box-shadow: 0 0 15px -2px #9900ff;
+      background-color: var(--instrument-color);
+      border-color: var(--instrument-color);
+      box-shadow: 0 0 15px -2px var(--instrument-color);
     }
 
     .step.current::after {
@@ -560,6 +585,7 @@ export class MusicStudio extends LitElement {
   
   @state() private beatmakerIsPlaying = false;
   @state() private beatmakerTempo = 120;
+  @state() private beatmakerVolume = 1;
   @state() private currentStep = -1;
   @state() private kickPattern: boolean[] = Array(16).fill(false);
   @state() private snarePattern: boolean[] = Array(16).fill(false);
@@ -569,7 +595,7 @@ export class MusicStudio extends LitElement {
   @state() private cymbalPattern: boolean[] = Array(16).fill(false);
 
   @state() private kitSize: 'simple' | 'extended' = 'simple';
-  @state() private selectedKit: 'Electronic' | '808' | 'Acoustic' = 'Electronic';
+  @state() private selectedKit: (typeof KITS)[number] = 'Electronic';
 
   private patterns = {
     kick: this.kickPattern,
@@ -588,6 +614,7 @@ export class MusicStudio extends LitElement {
     this.prompts = new Map(initialPrompts);
     this.drumMachine = new DrumMachine();
     this.drumMachine.setTempo(this.beatmakerTempo);
+    this.drumMachine.setVolume(this.beatmakerVolume);
     this.drumMachine.addEventListener('step', (e: Event) => {
         this.currentStep = (e as CustomEvent<number>).detail;
     });
@@ -677,6 +704,12 @@ export class MusicStudio extends LitElement {
     this.updateBeatmakerTempo(this.beatmakerTempo - 1);
   }
 
+  private handleBeatmakerVolumeChange(e: Event) {
+    const newVolume = parseFloat((e.target as HTMLInputElement).value);
+    this.beatmakerVolume = newVolume;
+    this.drumMachine.setVolume(newVolume);
+  }
+
   private handleKeyChange(e: Event) {
     this.key = (e.target as HTMLSelectElement).value;
     this.updateMusicalContext();
@@ -710,7 +743,7 @@ export class MusicStudio extends LitElement {
   }
 
   private handleKitChange(e: Event) {
-    const newKit = (e.target as HTMLSelectElement).value as 'Electronic' | '808' | 'Acoustic';
+    const newKit = (e.target as HTMLSelectElement).value as (typeof KITS)[number];
     this.selectedKit = newKit;
     this.drumMachine.setKit(newKit);
   }
@@ -776,7 +809,7 @@ export class MusicStudio extends LitElement {
   private renderBeatmakerPauseIcon() {
       return svg`<svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="white"/></svg>`;
   }
-  
+
   private renderLaunchpadView() {
     const numBars = 80;
     const visualizerBars = Array(numBars).fill(0);
@@ -830,7 +863,7 @@ export class MusicStudio extends LitElement {
                 <div class="control-group tempo-control">
                     <label for="tempo">Tempo</label>
                     <button class="tempo-btn" @click=${this.handleLaunchpadTempoDecrement} aria-label="Decrease tempo">-</button>
-                    <span class="tempo-value">${this.launchpadTempo} BPM</span>
+                    <span class="control-value">${this.launchpadTempo} BPM</span>
                     <button class="tempo-btn" @click=${this.handleLaunchpadTempoIncrement} aria-label="Increase tempo">+</button>
                     <input type="range" id="tempo" min="60" max="180" .value=${this.launchpadTempo} @input=${this.handleLaunchpadTempoChange}>
                 </div>
@@ -897,9 +930,14 @@ export class MusicStudio extends LitElement {
                     <div class="control-group tempo-control beatmaker-tempo-control">
                         <label for="beatmaker-tempo">Tempo</label>
                         <button class="tempo-btn" @click=${this.handleBeatmakerTempoDecrement} aria-label="Decrease beatmaker tempo">-</button>
-                        <span class="tempo-value">${this.beatmakerTempo} BPM</span>
+                        <span class="control-value">${this.beatmakerTempo} BPM</span>
                         <button class="tempo-btn" @click=${this.handleBeatmakerTempoIncrement} aria-label="Increase beatmaker tempo">+</button>
                         <input type="range" id="beatmaker-tempo" min="60" max="180" .value=${this.beatmakerTempo} @input=${this.handleBeatmakerTempoChange}>
+                    </div>
+                    <div class="control-group beatmaker-volume-control">
+                        <label for="beatmaker-volume">Volume</label>
+                        <input type="range" id="beatmaker-volume" min="0" max="1" step="0.01" .value=${this.beatmakerVolume} @input=${this.handleBeatmakerVolumeChange} aria-label="Beatmaker Volume">
+                        <span class="control-value">${Math.round(this.beatmakerVolume * 100)}%</span>
                     </div>
                 </div>
                 <div class="sequencer-container">
@@ -911,15 +949,25 @@ export class MusicStudio extends LitElement {
                             </div>
                         `)}
 
-                        ${displayedInstruments.map(instrument => html`
-                            <div class="instrument-label">${instrument}</div>
-                            ${this.patterns[instrument as keyof typeof this.patterns].map((active, i) => html`
-                                <div 
-                                    class="step ${active ? 'active' : ''} ${i === this.currentStep ? 'current' : ''} ${Math.floor(i / 4) % 2 === 1 ? 'beat-group-alt' : ''}"
-                                    @click=${() => this.toggleStep(instrument as any, i)}>
-                                </div>
-                            `)}
-                        `)}
+                        ${displayedInstruments.map(instrument => {
+                            const instrumentColor = KIT_COLORS[this.selectedKit][instrument];
+                            const labelStyle = styleMap({
+                                backgroundColor: instrumentColor,
+                            });
+                            const stepStyle = styleMap({
+                                '--instrument-color': instrumentColor,
+                            });
+                            return html`
+                                <div class="instrument-label" style=${labelStyle}>${instrument}</div>
+                                ${this.patterns[instrument].map((active, i) => html`
+                                    <div 
+                                        class="step ${active ? 'active' : ''} ${i === this.currentStep ? 'current' : ''} ${Math.floor(i / 4) % 2 === 1 ? 'beat-group-alt' : ''}"
+                                        style=${stepStyle}
+                                        @click=${() => this.toggleStep(instrument, i)}>
+                                    </div>
+                                `)}
+                            `;
+                        })}
                     </div>
                 </div>
             </div>

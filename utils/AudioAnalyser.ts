@@ -44,6 +44,7 @@ type Instrument = 'kick' | 'snare' | 'hat' | 'clap' | 'tom' | 'cymbal';
 /** A simple drum machine using Web Audio API. */
 export class DrumMachine extends EventTarget {
     private audioContext: AudioContext;
+    private masterGain: GainNode;
     private tempo = 120;
     private nextNoteTime = 0.0;
     private currentStep = 0;
@@ -67,6 +68,8 @@ export class DrumMachine extends EventTarget {
         super();
         // FIX: Cast window to `any` to access vendor-prefixed webkitAudioContext.
         this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        this.masterGain = this.audioContext.createGain();
+        this.masterGain.connect(this.audioContext.destination);
 
         this.kits = {
             'Electronic': {
@@ -91,6 +94,46 @@ export class DrumMachine extends EventTarget {
                 hat: this.playAcousticHat.bind(this),
                 clap: this.playAcousticClap.bind(this),
                 tom: this.playAcousticTom.bind(this),
+                cymbal: this.playAcousticCymbal.bind(this),
+            },
+            'Rock': {
+                kick: this.playRockKick.bind(this),
+                snare: this.playRockSnare.bind(this),
+                hat: this.playRockHat.bind(this),
+                clap: this.playAcousticClap.bind(this),
+                tom: this.playRockTom.bind(this),
+                cymbal: this.playRockCymbal.bind(this),
+            },
+            'Jazz': {
+                kick: this.playJazzKick.bind(this),
+                snare: this.playJazzSnare.bind(this),
+                hat: this.playJazzHat.bind(this),
+                clap: this.playAcousticClap.bind(this),
+                tom: this.playJazzTom.bind(this),
+                cymbal: this.playJazzCymbal.bind(this),
+            },
+            'Funk': {
+                kick: this.playFunkKick.bind(this),
+                snare: this.playFunkSnare.bind(this),
+                hat: this.playFunkHat.bind(this),
+                clap: this.playAcousticClap.bind(this),
+                tom: this.playFunkTom.bind(this),
+                cymbal: this.playRockCymbal.bind(this),
+            },
+            'Brush': {
+                kick: this.playBrushKick.bind(this),
+                snare: this.playBrushSnare.bind(this),
+                hat: this.playBrushHat.bind(this),
+                clap: this.playAcousticClap.bind(this),
+                tom: this.playBrushTom.bind(this),
+                cymbal: this.playBrushCymbal.bind(this),
+            },
+            'Studio': {
+                kick: this.playStudioKick.bind(this),
+                snare: this.playStudioSnare.bind(this),
+                hat: this.playStudioHat.bind(this),
+                clap: this.playAcousticClap.bind(this),
+                tom: this.playStudioTom.bind(this),
                 cymbal: this.playAcousticCymbal.bind(this),
             }
         };
@@ -146,6 +189,12 @@ export class DrumMachine extends EventTarget {
         this.tempo = newTempo;
     }
 
+    public setVolume(volume: number) {
+        if (this.masterGain) {
+            this.masterGain.gain.setValueAtTime(volume, this.audioContext.currentTime);
+        }
+    }
+
     public setKit(kitName: string) {
         this.selectedKit = kitName;
     }
@@ -174,7 +223,7 @@ export class DrumMachine extends EventTarget {
         const osc = this.audioContext.createOscillator();
         const gain = this.audioContext.createGain();
         osc.connect(gain);
-        gain.connect(this.audioContext.destination);
+        gain.connect(this.masterGain);
         osc.frequency.setValueAtTime(150, time);
         gain.gain.setValueAtTime(1, time);
         osc.frequency.exponentialRampToValueAtTime(0.01, time + 0.1);
@@ -191,7 +240,7 @@ export class DrumMachine extends EventTarget {
         noise.connect(noiseFilter);
         const noiseEnvelope = this.audioContext.createGain();
         noiseFilter.connect(noiseEnvelope);
-        noiseEnvelope.connect(this.audioContext.destination);
+        noiseEnvelope.connect(this.masterGain);
         noiseEnvelope.gain.setValueAtTime(1, time);
         noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
         noise.start(time);
@@ -206,7 +255,7 @@ export class DrumMachine extends EventTarget {
         noise.connect(noiseFilter);
         const noiseEnvelope = this.audioContext.createGain();
         noiseFilter.connect(noiseEnvelope);
-        noiseEnvelope.connect(this.audioContext.destination);
+        noiseEnvelope.connect(this.masterGain);
         noiseEnvelope.gain.setValueAtTime(1, time);
         noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
         noise.start(time);
@@ -221,7 +270,7 @@ export class DrumMachine extends EventTarget {
         noise.connect(noiseFilter);
         const noiseEnvelope = this.audioContext.createGain();
         noiseFilter.connect(noiseEnvelope);
-        noiseEnvelope.connect(this.audioContext.destination);
+        noiseEnvelope.connect(this.masterGain);
         noiseEnvelope.gain.setValueAtTime(1, time);
         noiseEnvelope.gain.exponentialRampToValueAtTime(0.1, time + 0.02);
         noiseEnvelope.gain.setValueAtTime(1, time + 0.025);
@@ -235,7 +284,7 @@ export class DrumMachine extends EventTarget {
         const gain = this.audioContext.createGain();
         osc.type = 'sine';
         osc.connect(gain);
-        gain.connect(this.audioContext.destination);
+        gain.connect(this.masterGain);
         osc.frequency.setValueAtTime(250, time);
         osc.frequency.exponentialRampToValueAtTime(100, time + 0.2);
         gain.gain.setValueAtTime(0.8, time);
@@ -252,7 +301,7 @@ export class DrumMachine extends EventTarget {
         noise.connect(noiseFilter);
         const noiseEnvelope = this.audioContext.createGain();
         noiseFilter.connect(noiseEnvelope);
-        noiseEnvelope.connect(this.audioContext.destination);
+        noiseEnvelope.connect(this.masterGain);
         noiseEnvelope.gain.setValueAtTime(0.6, time);
         noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.4);
         noise.start(time);
@@ -264,7 +313,7 @@ export class DrumMachine extends EventTarget {
         const osc = this.audioContext.createOscillator();
         const gain = this.audioContext.createGain();
         osc.connect(gain);
-        gain.connect(this.audioContext.destination);
+        gain.connect(this.masterGain);
         osc.frequency.setValueAtTime(120, time);
         osc.frequency.exponentialRampToValueAtTime(30, time + 0.3);
         gain.gain.setValueAtTime(1, time);
@@ -281,7 +330,7 @@ export class DrumMachine extends EventTarget {
         noise.connect(noiseFilter);
         const noiseEnvelope = this.audioContext.createGain();
         noiseFilter.connect(noiseEnvelope);
-        noiseEnvelope.connect(this.audioContext.destination);
+        noiseEnvelope.connect(this.masterGain);
         noiseEnvelope.gain.setValueAtTime(1, time);
         noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
         noise.start(time);
@@ -296,7 +345,7 @@ export class DrumMachine extends EventTarget {
         noise.connect(noiseFilter);
         const noiseEnvelope = this.audioContext.createGain();
         noiseFilter.connect(noiseEnvelope);
-        noiseEnvelope.connect(this.audioContext.destination);
+        noiseEnvelope.connect(this.masterGain);
         noiseEnvelope.gain.setValueAtTime(0.5, time);
         noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.03);
         noise.start(time);
@@ -312,7 +361,7 @@ export class DrumMachine extends EventTarget {
         const osc = this.audioContext.createOscillator();
         const gain = this.audioContext.createGain();
         osc.connect(gain);
-        gain.connect(this.audioContext.destination);
+        gain.connect(this.masterGain);
         osc.frequency.setValueAtTime(180, time);
         osc.frequency.exponentialRampToValueAtTime(40, time + 0.1);
         gain.gain.setValueAtTime(1, time);
@@ -330,7 +379,7 @@ export class DrumMachine extends EventTarget {
         noise.connect(noiseFilter);
         const noiseEnvelope = this.audioContext.createGain();
         noiseFilter.connect(noiseEnvelope);
-        noiseEnvelope.connect(this.audioContext.destination);
+        noiseEnvelope.connect(this.masterGain);
         noiseEnvelope.gain.setValueAtTime(1, time);
         noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.12);
         noise.start(time);
@@ -345,7 +394,7 @@ export class DrumMachine extends EventTarget {
         noise.connect(noiseFilter);
         const noiseEnvelope = this.audioContext.createGain();
         noiseFilter.connect(noiseEnvelope);
-        noiseEnvelope.connect(this.audioContext.destination);
+        noiseEnvelope.connect(this.masterGain);
         noiseEnvelope.gain.setValueAtTime(0.7, time);
         noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.04);
         noise.start(time);
@@ -372,10 +421,325 @@ export class DrumMachine extends EventTarget {
 
         const gain = this.audioContext.createGain();
         highpass.connect(gain);
-        gain.connect(this.audioContext.destination);
+        gain.connect(this.masterGain);
         gain.gain.setValueAtTime(0.8, time);
         gain.gain.exponentialRampToValueAtTime(0.01, time + 0.5);
         noise.start(time);
         noise.stop(time + 0.5);
     }
+    
+    // Rock Kit
+    private playRockKick(time: number) {
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+
+        osc.frequency.setValueAtTime(160, time);
+        osc.frequency.exponentialRampToValueAtTime(50, time + 0.1);
+        gain.gain.setValueAtTime(1.2, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+        osc.start(time);
+        osc.stop(time + 0.2);
+    }
+
+    private playRockSnare(time: number) {
+        const osc = this.audioContext.createOscillator();
+        osc.type = 'triangle';
+        const oscGain = this.audioContext.createGain();
+        osc.connect(oscGain);
+        oscGain.connect(this.masterGain);
+
+        osc.frequency.setValueAtTime(220, time);
+        oscGain.gain.setValueAtTime(0.7, time);
+        oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+        osc.start(time);
+        osc.stop(time + 0.1);
+
+        const noise = this.createNoiseBuffer();
+        const noiseFilter = this.audioContext.createBiquadFilter();
+        noiseFilter.type = 'highpass';
+        noiseFilter.frequency.value = 1500;
+        noise.connect(noiseFilter);
+        const noiseEnvelope = this.audioContext.createGain();
+        noiseFilter.connect(noiseEnvelope);
+        noiseEnvelope.connect(this.masterGain);
+
+        noiseEnvelope.gain.setValueAtTime(1, time);
+        noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+        noise.start(time);
+        noise.stop(time + 0.15);
+    }
+
+    private playRockHat(time: number) { this.playAcousticHat(time); }
+
+    private playRockTom(time: number) {
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        osc.type = 'sine';
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.frequency.setValueAtTime(300, time);
+        osc.frequency.exponentialRampToValueAtTime(120, time + 0.25);
+        gain.gain.setValueAtTime(1, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.25);
+        osc.start(time);
+        osc.stop(time + 0.3);
+    }
+
+    private playRockCymbal(time: number) { this.playAcousticCymbal(time); }
+
+
+    // Jazz Kit
+    private playJazzKick(time: number) {
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.frequency.setValueAtTime(120, time);
+        osc.frequency.exponentialRampToValueAtTime(60, time + 0.2);
+        gain.gain.setValueAtTime(0.9, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.25);
+        osc.start(time);
+        osc.stop(time + 0.3);
+    }
+
+    private playJazzSnare(time: number) {
+        const osc = this.audioContext.createOscillator();
+        osc.type = 'sine';
+        const oscGain = this.audioContext.createGain();
+        osc.connect(oscGain);
+        oscGain.connect(this.masterGain);
+
+        osc.frequency.setValueAtTime(250, time);
+        oscGain.gain.setValueAtTime(0.5, time);
+        oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
+        osc.start(time);
+        osc.stop(time + 0.15);
+
+        const noise = this.createNoiseBuffer();
+        const noiseFilter = this.audioContext.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.value = 2500;
+        noise.connect(noiseFilter);
+        const noiseEnvelope = this.audioContext.createGain();
+        noiseFilter.connect(noiseEnvelope);
+        noiseEnvelope.connect(this.masterGain);
+
+        noiseEnvelope.gain.setValueAtTime(0.6, time);
+        noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+        noise.start(time);
+        noise.stop(time + 0.1);
+    }
+
+    private playJazzHat(time: number) {
+        const noise = this.createNoiseBuffer();
+        const noiseFilter = this.audioContext.createBiquadFilter();
+        noiseFilter.type = 'highpass';
+        noiseFilter.frequency.value = 6000;
+        noise.connect(noiseFilter);
+        const noiseEnvelope = this.audioContext.createGain();
+        noiseFilter.connect(noiseEnvelope);
+        noiseEnvelope.connect(this.masterGain);
+        noiseEnvelope.gain.setValueAtTime(0.5, time);
+        noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
+        noise.start(time);
+        noise.stop(time + 0.05);
+    }
+
+    private playJazzTom(time: number) {
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        osc.type = 'sine';
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.frequency.setValueAtTime(400, time);
+        osc.frequency.exponentialRampToValueAtTime(200, time + 0.3);
+        gain.gain.setValueAtTime(0.8, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.3);
+        osc.start(time);
+        osc.stop(time + 0.35);
+    }
+
+    private playJazzCymbal(time: number) { // Ride sound
+        const noise = this.createNoiseBuffer();
+        const bandpass = this.audioContext.createBiquadFilter();
+        bandpass.type = 'bandpass';
+        bandpass.frequency.value = 4000;
+        bandpass.Q.value = 1;
+        noise.connect(bandpass);
+        const gain = this.audioContext.createGain();
+        bandpass.connect(gain);
+        gain.connect(this.masterGain);
+        gain.gain.setValueAtTime(0.6, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.6);
+        noise.start(time);
+        noise.stop(time + 0.6);
+    }
+
+    // Funk Kit
+    private playFunkKick(time: number) { // Tight and punchy
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.frequency.setValueAtTime(140, time);
+        osc.frequency.exponentialRampToValueAtTime(60, time + 0.08);
+        gain.gain.setValueAtTime(1.1, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+        osc.start(time);
+        osc.stop(time + 0.12);
+    }
+
+    private playFunkSnare(time: number) { // Crack
+        const osc = this.audioContext.createOscillator();
+        osc.type = 'triangle';
+        const oscGain = this.audioContext.createGain();
+        osc.connect(oscGain);
+        oscGain.connect(this.masterGain);
+        osc.frequency.setValueAtTime(250, time);
+        oscGain.gain.setValueAtTime(0.8, time);
+        oscGain.gain.exponentialRampToValueAtTime(0.01, time + 0.08);
+        osc.start(time);
+        osc.stop(time + 0.08);
+
+        const noise = this.createNoiseBuffer();
+        const noiseFilter = this.audioContext.createBiquadFilter();
+        noiseFilter.type = 'highpass';
+        noiseFilter.frequency.value = 2000;
+        noise.connect(noiseFilter);
+        const noiseEnvelope = this.audioContext.createGain();
+        noiseFilter.connect(noiseEnvelope);
+        noiseEnvelope.connect(this.masterGain);
+        noiseEnvelope.gain.setValueAtTime(1.2, time);
+        noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.1);
+        noise.start(time);
+        noise.stop(time + 0.1);
+    }
+
+    private playFunkHat(time: number) { // Crisp
+        const noise = this.createNoiseBuffer();
+        const noiseFilter = this.audioContext.createBiquadFilter();
+        noiseFilter.type = 'highpass';
+        noiseFilter.frequency.value = 8500;
+        noise.connect(noiseFilter);
+        const noiseEnvelope = this.audioContext.createGain();
+        noiseFilter.connect(noiseEnvelope);
+        noiseEnvelope.connect(this.masterGain);
+        noiseEnvelope.gain.setValueAtTime(0.8, time);
+        noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.025);
+        noise.start(time);
+        noise.stop(time + 0.025);
+    }
+
+    private playFunkTom(time: number) { this.playRockTom(time); }
+
+
+    // Brush Kit
+    private playBrushKick(time: number) { // Soft
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.frequency.setValueAtTime(100, time);
+        osc.frequency.exponentialRampToValueAtTime(50, time + 0.15);
+        gain.gain.setValueAtTime(0, time);
+        gain.gain.linearRampToValueAtTime(0.8, time + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+        osc.start(time);
+        osc.stop(time + 0.2);
+    }
+
+    private playBrushSnare(time: number) { // Swish
+        const noise = this.createNoiseBuffer();
+        const noiseFilter = this.audioContext.createBiquadFilter();
+        noiseFilter.type = 'lowpass';
+        noiseFilter.frequency.value = 6000;
+        noise.connect(noiseFilter);
+        const noiseEnvelope = this.audioContext.createGain();
+        noiseFilter.connect(noiseEnvelope);
+        noiseEnvelope.connect(this.masterGain);
+        noiseEnvelope.gain.setValueAtTime(0, time);
+        noiseEnvelope.gain.linearRampToValueAtTime(0.5, time + 0.05);
+        noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+        noise.start(time);
+        noise.stop(time + 0.2);
+    }
+
+    private playBrushHat(time: number) {
+        const noise = this.createNoiseBuffer();
+        const noiseFilter = this.audioContext.createBiquadFilter();
+        noiseFilter.type = 'highpass';
+        noiseFilter.frequency.value = 7500;
+        noise.connect(noiseFilter);
+        const noiseEnvelope = this.audioContext.createGain();
+        noiseFilter.connect(noiseEnvelope);
+        noiseEnvelope.connect(this.masterGain);
+        noiseEnvelope.gain.setValueAtTime(0.4, time);
+        noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.03);
+        noise.start(time);
+        noise.stop(time + 0.03);
+    }
+
+    private playBrushTom(time: number) {
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        osc.type = 'sine';
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.frequency.setValueAtTime(280, time);
+        osc.frequency.exponentialRampToValueAtTime(150, time + 0.2);
+        gain.gain.setValueAtTime(0.6, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.2);
+        osc.start(time);
+        osc.stop(time + 0.25);
+    }
+
+    private playBrushCymbal(time: number) {
+        const noise = this.createNoiseBuffer();
+        const noiseFilter = this.audioContext.createBiquadFilter();
+        noiseFilter.type = 'highpass';
+        noiseFilter.frequency.value = 5000;
+        noise.connect(noiseFilter);
+        const noiseEnvelope = this.audioContext.createGain();
+        noiseFilter.connect(noiseEnvelope);
+        noiseEnvelope.connect(this.masterGain);
+        noiseEnvelope.gain.setValueAtTime(0, time);
+        noiseEnvelope.gain.linearRampToValueAtTime(0.4, time + 0.1);
+        noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.8);
+        noise.start(time);
+        noise.stop(time + 0.8);
+    }
+
+    // Studio Kit
+    private playStudioKick(time: number) {
+        const osc = this.audioContext.createOscillator();
+        const gain = this.audioContext.createGain();
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.frequency.setValueAtTime(150, time);
+        osc.frequency.exponentialRampToValueAtTime(55, time + 0.12);
+        gain.gain.setValueAtTime(1, time);
+        gain.gain.exponentialRampToValueAtTime(0.01, time + 0.18);
+        osc.start(time);
+        osc.stop(time + 0.2);
+
+        const noise = this.createNoiseBuffer();
+        const noiseFilter = this.audioContext.createBiquadFilter();
+        noiseFilter.type = 'bandpass';
+        noiseFilter.frequency.value = 800;
+        noise.connect(noiseFilter);
+        const noiseEnvelope = this.audioContext.createGain();
+        noiseFilter.connect(noiseEnvelope);
+        noiseEnvelope.connect(this.masterGain);
+        noiseEnvelope.gain.setValueAtTime(0.3, time);
+        noiseEnvelope.gain.exponentialRampToValueAtTime(0.01, time + 0.02);
+        noise.start(time);
+        noise.stop(time + 0.02);
+    }
+
+    private playStudioSnare(time: number) { this.playAcousticSnare(time); }
+    private playStudioHat(time: number) { this.playAcousticHat(time); }
+    private playStudioTom(time: number) { this.playRockTom(time); }
+
 }
