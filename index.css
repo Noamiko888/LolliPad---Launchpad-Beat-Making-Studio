@@ -6,9 +6,24 @@ body {
   font-family: 'Google Sans', sans-serif;
   font-size: 14px;
   overflow: hidden;
-  background: #111;
   color: #fff;
+  background: linear-gradient(-45deg, #11001c, #2e003e, #1c004a, #002d5e);
+	background-size: 400% 400%;
+	animation: gradient 15s ease infinite;
 }
+
+@keyframes gradient {
+	0% {
+		background-position: 0% 50%;
+	}
+	50% {
+		background-position: 100% 50%;
+	}
+	100% {
+		background-position: 0% 50%;
+	}
+}
+
 body.dragging {
   cursor: ns-resize;
 }

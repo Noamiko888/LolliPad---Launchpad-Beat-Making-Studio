@@ -16,33 +16,44 @@ export class ToastMessage extends LitElement {
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background-color: #000;
-      color: white;
       padding: 15px;
-      border-radius: 5px;
+      border-radius: 8px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 15px;
       width: min(450px, 80vw);
       transition: transform 0.5s cubic-bezier(0.19, 1, 0.22, 1);
-      border: 2px solid #fff;
-      box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
       text-wrap: pretty;
+      z-index: 100;
+      
+      /* Glassmorphism */
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.2);
+      color: white;
     }
     button {
-      border-radius: 100px;
-      aspect-ratio: 1;
+      border-radius: 50%;
+      width: 24px;
+      height: 24px;
       border: none;
-      color: #000;
+      background: rgba(0, 0, 0, 0.3);
+      color: #fff;
       cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     .toast:not(.showing) {
       transition-duration: 1s;
       transform: translate(-50%, -200%);
     }
     a {
-      color: #acacac;
+      color: #d1bfff;
       text-decoration: underline;
     }
   `;

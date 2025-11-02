@@ -19,9 +19,11 @@ export class PlayPauseButton extends LitElement {
       align-items: center;
       justify-content: center;
       pointer-events: none;
+      width: 90px;
+      height: 90px;
     }
     :host(:hover) svg {
-      transform: scale(1.2);
+      transform: scale(1.1);
     }
     svg {
       width: 100%;
@@ -31,15 +33,14 @@ export class PlayPauseButton extends LitElement {
     .hitbox {
       pointer-events: all;
       position: absolute;
-      width: 65%;
-      aspect-ratio: 1;
-      top: 9%;
+      width: 100%;
+      height: 100%;
       border-radius: 50%;
       cursor: pointer;
     }
     .loader {
       stroke: #ffffff;
-      stroke-width: 3;
+      stroke-width: 4;
       stroke-linecap: round;
       animation: spin linear 1s infinite;
       transform-origin: center;
@@ -53,119 +54,41 @@ export class PlayPauseButton extends LitElement {
 
   private renderSvg() {
     return html` <svg
-      width="140"
-      height="140"
-      viewBox="0 -10 140 150"
+      width="90"
+      height="90"
+      viewBox="0 0 90 90"
       fill="none"
-      xmlns="http://www.w3.org/2000/svg">
-      <rect
-        x="22"
-        y="6"
-        width="96"
-        height="96"
-        rx="48"
-        fill="black"
-        fill-opacity="0.05" />
-      <rect
-        x="23.5"
-        y="7.5"
-        width="93"
-        height="93"
-        rx="46.5"
-        stroke="black"
-        stroke-opacity="0.3"
-        stroke-width="3" />
-      <g filter="url(#filter0_ddi_1048_7373)">
-        <rect
-          x="25"
-          y="9"
-          width="90"
-          height="90"
-          rx="45"
-          fill="white"
-          fill-opacity="0.05"
-          shape-rendering="crispEdges" />
-      </g>
+      xmlns="http://www.w.w3.org/2000/svg">
+      <circle 
+        cx="45" 
+        cy="45" 
+        r="44" 
+        stroke="rgba(255, 255, 255, 0.3)" 
+        stroke-width="2"/>
+      <circle 
+        cx="45" 
+        cy="45" 
+        r="40" 
+        fill="rgba(255, 255, 255, 0.1)"/>
       ${this.renderIcon()}
-      <defs>
-        <filter
-          id="filter0_ddi_1048_7373"
-          x="0"
-          y="0"
-          width="140"
-          height="140"
-          filterUnits="userSpaceOnUse"
-          color-interpolation-filters="sRGB">
-          <feFlood flood-opacity="0" result="BackgroundImageFix" />
-          <feColorMatrix
-            in="SourceAlpha"
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-            result="hardAlpha" />
-          <feOffset dy="2" />
-          <feGaussianBlur stdDeviation="4" />
-          <feComposite in2="hardAlpha" operator="out" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
-          <feBlend
-            mode="normal"
-            in2="BackgroundImageFix"
-            result="effect1_dropShadow_1048_7373" />
-          <feColorMatrix
-            in="SourceAlpha"
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-            result="hardAlpha" />
-          <feOffset dy="16" />
-          <feGaussianBlur stdDeviation="12.5" />
-          <feComposite in2="hardAlpha" operator="out" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.25 0" />
-          <feBlend
-            mode="normal"
-            in2="effect1_dropShadow_1048_7373"
-            result="effect2_dropShadow_1048_7373" />
-          <feBlend
-            mode="normal"
-            in="SourceGraphic"
-            in2="effect2_dropShadow_1048_7373"
-            result="shape" />
-          <feColorMatrix
-            in="SourceAlpha"
-            type="matrix"
-            values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
-            result="hardAlpha" />
-          <feOffset dy="3" />
-          <feGaussianBlur stdDeviation="1.5" />
-          <feComposite in2="hardAlpha" operator="arithmetic" k2="-1" k3="1" />
-          <feColorMatrix
-            type="matrix"
-            values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0" />
-          <feBlend
-            mode="normal"
-            in2="shape"
-            result="effect3_innerShadow_1048_7373" />
-        </filter>
-      </defs>
     </svg>`;
   }
 
   private renderPause() {
     return svg`<path
-      d="M75.0037 69V39H83.7537V69H75.0037ZM56.2537 69V39H65.0037V69H56.2537Z"
-      fill="#FEFEFE"
+      d="M52 30H58V60H52V30Z M32 30H38V60H32V30Z"
+      fill="white"
     />`;
   }
 
   private renderPlay() {
-    return svg`<path d="M60 71.5V36.5L87.5 54L60 71.5Z" fill="#FEFEFE" />`;
+    return svg`<path d="M36 62V28L62 45L36 62Z" fill="white" />`;
   }
 
+
+
   private renderLoading() {
-    return svg`<path shape-rendering="crispEdges" class="loader" d="M70,74.2L70,74.2c-10.7,0-19.5-8.7-19.5-19.5l0,0c0-10.7,8.7-19.5,19.5-19.5
-            l0,0c10.7,0,19.5,8.7,19.5,19.5l0,0"/>`;
+    return svg`<path shape-rendering="crispEdges" class="loader" d="M45,64.2C33.3,64.2,23.8,54.7,23.8,43c0-11.7,9.5-21.2,21.2-21.2"/>`;
   }
 
   private renderIcon() {

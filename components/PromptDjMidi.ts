@@ -18,7 +18,8 @@ import { DrumMachine } from '../utils/AudioAnalyser';
 
 const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const SCALES = ['Major', 'Minor', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Locrian'];
-const INSTRUMENTS = ['kick', 'snare', 'hat'];
+const ALL_INSTRUMENTS: (keyof MusicStudio['patterns'])[] = ['kick', 'snare', 'hat', 'clap', 'tom', 'cymbal'];
+const KITS = ['Electronic', '808', 'Acoustic'];
 
 @customElement('music-studio')
 export class MusicStudio extends LitElement {
@@ -31,7 +32,6 @@ export class MusicStudio extends LitElement {
       height: 100%;
       max-height: 100vh;
       box-sizing: border-box;
-      background: #111;
       color: white;
       font-family: sans-serif;
       overflow-y: auto;
@@ -43,9 +43,16 @@ export class MusicStudio extends LitElement {
       align-items: center;
       padding: 10px 20px;
       gap: 15px;
-      background: #222;
-      border-bottom: 1px solid #333;
       flex-wrap: wrap;
+      margin: 15px;
+      border-radius: 12px;
+      
+      /* Glassmorphism */
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     }
 
     .control-group {
@@ -56,14 +63,19 @@ export class MusicStudio extends LitElement {
 
     .control-group label {
       font-size: 0.9em;
+      font-weight: 500;
     }
 
-    .control-group select, .control-group input {
-      background: #333;
+    .control-group select, .control-group input[type="range"] {
+      background: rgba(0, 0, 0, 0.2);
       color: white;
-      border: 1px solid #555;
+      border: 1px solid rgba(255, 255, 255, 0.2);
       border-radius: 4px;
       padding: 5px;
+    }
+    
+    .control-group input[type="checkbox"] {
+      margin-right: 5px;
     }
 
     #visualizer {
@@ -77,6 +89,7 @@ export class MusicStudio extends LitElement {
       flex: 1;
       background-color: #3dffab;
       transition: height 0.1s;
+      border-radius: 1px;
     }
 
     #studio-body {
@@ -86,7 +99,7 @@ export class MusicStudio extends LitElement {
       align-items: center;
       justify-content: center;
       gap: 30px;
-      padding: 30px 20px;
+      padding: 0 20px 30px 20px;
       box-sizing: border-box;
     }
 
@@ -95,13 +108,20 @@ export class MusicStudio extends LitElement {
       flex-direction: column;
       align-items: center;
       gap: 15px;
+      width: 100%;
+    }
+
+    #launchpad-section h2 {
+      margin: 0;
+      font-weight: 600;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     }
     
     #launchpad {
       display: grid;
       grid-template-columns: repeat(8, 1fr);
       gap: 15px;
-      width: 90vmin;
+      width: 100%;
       max-width: 800px;
     }
 
@@ -110,9 +130,16 @@ export class MusicStudio extends LitElement {
       max-width: 900px;
       padding: 20px;
       box-sizing: border-box;
-      background-color: #1a1a1a;
-      border-radius: 10px;
+      border-radius: 12px;
       margin-top: auto;
+      transition: all 0.3s ease;
+
+      /* Glassmorphism */
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
     }
 
     .beatmaker-controls {
@@ -120,6 +147,7 @@ export class MusicStudio extends LitElement {
       align-items: center;
       gap: 15px;
       margin-bottom: 15px;
+      flex-wrap: wrap;
     }
     
     .beatmaker-controls .play-button {
@@ -127,13 +155,29 @@ export class MusicStudio extends LitElement {
       height: 40px;
       border-radius: 50%;
       border: none;
-      background: #333;
+      background: rgba(0, 0, 0, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       color: white;
       cursor: pointer;
+      font-size: 1.2em;
+      transition: background-color 0.2s, box-shadow 0.2s;
     }
     .beatmaker-controls .play-button.playing {
       background: #3dffab;
       color: #111;
+      box-shadow: 0 0 10px #3dffab;
+    }
+
+    .beatmaker-controls h3 {
+      margin: 0;
+      font-weight: 600;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+    }
+
+    .beatmaker-sub-controls {
+      display: flex;
+      gap: 10px;
+      margin-left: auto;
     }
 
     #sequencer {
@@ -148,22 +192,26 @@ export class MusicStudio extends LitElement {
       justify-content: center;
       font-weight: bold;
       font-size: 0.9em;
+      text-transform: capitalize;
     }
 
     .step {
       aspect-ratio: 1;
       border-radius: 4px;
-      background-color: #333;
+      background-color: rgba(0, 0, 0, 0.2);
       cursor: pointer;
-      border: 1px solid #444;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: background-color 0.2s, box-shadow 0.2s;
     }
 
     .step.active {
       background-color: #5200ff;
+      box-shadow: 0 0 8px #5200ff;
     }
 
     .step.current {
-      box-shadow: inset 0 0 5px #ffdd28;
+      border-color: #ffdd28;
+      box-shadow: inset 0 0 5px #ffdd28, 0 0 8px #5200ff;
     }
   `;
 
@@ -182,11 +230,20 @@ export class MusicStudio extends LitElement {
   @state() private kickPattern: boolean[] = Array(16).fill(false);
   @state() private snarePattern: boolean[] = Array(16).fill(false);
   @state() private hatPattern: boolean[] = Array(16).fill(false);
+  @state() private clapPattern: boolean[] = Array(16).fill(false);
+  @state() private tomPattern: boolean[] = Array(16).fill(false);
+  @state() private cymbalPattern: boolean[] = Array(16).fill(false);
+
+  @state() private kitSize: 'simple' | 'extended' = 'simple';
+  @state() private selectedKit: 'Electronic' | '808' | 'Acoustic' = 'Electronic';
 
   private patterns = {
     kick: this.kickPattern,
     snare: this.snarePattern,
     hat: this.hatPattern,
+    clap: this.clapPattern,
+    tom: this.tomPattern,
+    cymbal: this.cymbalPattern,
   };
 
   private midiDispatcher = new MidiDispatcher();
@@ -263,21 +320,41 @@ export class MusicStudio extends LitElement {
     }
   }
 
-  private toggleStep(instrument: 'kick' | 'snare' | 'hat', stepIndex: number) {
+  private toggleStep(instrument: keyof typeof this.patterns, stepIndex: number) {
     const pattern = [...this.patterns[instrument]];
     pattern[stepIndex] = !pattern[stepIndex];
     
-    if (instrument === 'kick') this.kickPattern = pattern;
-    else if (instrument === 'snare') this.snarePattern = pattern;
-    else if (instrument === 'hat') this.hatPattern = pattern;
+    switch (instrument) {
+        case 'kick': this.kickPattern = pattern; break;
+        case 'snare': this.snarePattern = pattern; break;
+        case 'hat': this.hatPattern = pattern; break;
+        case 'clap': this.clapPattern = pattern; break;
+        case 'tom': this.tomPattern = pattern; break;
+        case 'cymbal': this.cymbalPattern = pattern; break;
+    }
 
     this.patterns[instrument] = pattern;
     this.drumMachine.updatePattern(instrument, pattern);
+    this.requestUpdate();
+  }
+
+  private handleKitSizeChange(e: Event) {
+    this.kitSize = (e.target as HTMLSelectElement).value as 'simple' | 'extended';
+  }
+
+  private handleKitChange(e: Event) {
+    const newKit = (e.target as HTMLSelectElement).value as 'Electronic' | '808' | 'Acoustic';
+    this.selectedKit = newKit;
+    this.drumMachine.setKit(newKit);
   }
 
   // FIX: Removed 'override' keyword.
   render() {
     const visualizerBars = Array(24).fill(0);
+    const displayedInstruments = this.kitSize === 'simple'
+        ? ALL_INSTRUMENTS.slice(0, 3)
+        : ALL_INSTRUMENTS;
+
     return html`
       <div id="global-controls">
         <div class="control-group">
@@ -341,9 +418,24 @@ export class MusicStudio extends LitElement {
                     ${this.beatmakerIsPlaying ? '❚❚' : '▶'}
                 </button>
                 <h3>Beatmaker</h3>
+                <div class="beatmaker-sub-controls">
+                    <div class="control-group">
+                        <label for="kit-size">Kit Size:</label>
+                        <select id="kit-size" @change=${this.handleKitSizeChange}>
+                            <option value="simple" ?selected=${this.kitSize === 'simple'}>Simple</option>
+                            <option value="extended" ?selected=${this.kitSize === 'extended'}>Extended</option>
+                        </select>
+                    </div>
+                    <div class="control-group">
+                        <label for="drum-kit">Drum Kit:</label>
+                        <select id="drum-kit" @change=${this.handleKitChange}>
+                            ${KITS.map(k => html`<option .value=${k} ?selected=${k === this.selectedKit}>${k}</option>`)}
+                        </select>
+                    </div>
+                </div>
             </div>
             <div id="sequencer">
-                ${INSTRUMENTS.map(instrument => html`
+                ${displayedInstruments.map(instrument => html`
                     <div class="instrument-label">${instrument}</div>
                     ${this.patterns[instrument as keyof typeof this.patterns].map((active, i) => html`
                         <div 
