@@ -11,6 +11,8 @@ import { css, html, LitElement, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { styleMap } from 'lit/directives/style-map.js';
+import { classMap } from 'lit/directives/class-map.js';
+
 
 import type { PlaybackState, Prompt } from '../types';
 import { MidiDispatcher } from '../utils/MidiDispatcher';
@@ -77,9 +79,49 @@ export class MusicStudio extends LitElement {
       position: relative;
     }
     
-    #global-controls {
+    #app-menu {
       display: flex;
-      justify-content: space-between;
+      justify-content: center;
+      gap: 10px;
+      padding: 20px 0 10px;
+      flex-shrink: 0;
+    }
+
+    .menu-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 20px;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+      font-size: 1em;
+      transition: all 0.2s;
+    }
+
+    .menu-btn:hover {
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .menu-btn.active {
+      background: white;
+      color: #0D0B12;
+      font-weight: 600;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    }
+
+    #launchpad-player {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      width: 100%;
+      max-width: 900px;
+      box-sizing: border-box;
+    }
+
+    #launchpad-controls {
+      display: flex;
       align-items: center;
       padding: 15px 25px;
       gap: 20px;
@@ -88,6 +130,7 @@ export class MusicStudio extends LitElement {
       width: 100%;
       max-width: 900px;
       box-sizing: border-box;
+      margin-top: 30px;
       
       /* Glassmorphism */
       background: rgba(20, 10, 30, 0.5);
@@ -127,6 +170,7 @@ export class MusicStudio extends LitElement {
       width: 16px;
       height: 16px;
       accent-color: #9900ff;
+      vertical-align: middle;
     }
 
     .action-button {
@@ -156,15 +200,21 @@ export class MusicStudio extends LitElement {
     #visualizer {
       display: flex;
       align-items: flex-end;
-      width: 120px;
-      height: 40px;
-      gap: 2px;
+      flex-grow: 1;
+      min-width: 150px;
+      height: 80px;
+      gap: 1.5px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 12px;
+      padding: 8px;
+      box-sizing: border-box;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.4);
     }
     .vis-bar {
       flex: 1;
-      background-color: #3dffab;
       transition: height 0.1s;
-      border-radius: 1px;
+      border-radius: 2px;
     }
 
     #studio-body {
@@ -172,18 +222,13 @@ export class MusicStudio extends LitElement {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
       gap: 30px;
-      padding: 30px 20px;
+      padding: 10px 20px 30px;
       box-sizing: border-box;
-      transition: justify-content 0.5s ease;
     }
 
-    :host([beatmaker-visible]) #studio-body {
-        justify-content: flex-start;
-    }
-
-    #launchpad-section {
+    .view-container {
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -191,7 +236,7 @@ export class MusicStudio extends LitElement {
       width: 100%;
     }
 
-    #launchpad-section h2 {
+    .view-container h2 {
       margin: 0;
       font-size: clamp(2em, 5vw, 2.5em);
       font-weight: 700;
@@ -217,8 +262,6 @@ export class MusicStudio extends LitElement {
       padding: 20px;
       box-sizing: border-box;
       border-radius: 18px;
-      transition: all 0.5s ease;
-      overflow: hidden;
 
       /* Glassmorphism */
       background: rgba(20, 10, 30, 0.5);
@@ -228,40 +271,20 @@ export class MusicStudio extends LitElement {
       box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     }
 
-    :host(:not([beatmaker-visible])) #beatmaker {
-        max-height: 0;
-        opacity: 0;
-        padding-top: 0;
-        padding-bottom: 0;
-        border-width: 0;
-        pointer-events: none;
-        margin-bottom: -30px; /* Counteract parent gap */
-    }
-
-    .show-beatmaker-btn {
-        padding: 12px 24px;
-        font-weight: 600;
-        font-size: 1em;
-        border-radius: 25px;
-        transition: opacity 0.4s ease, transform 0.4s ease;
-    }
-    
-    :host([beatmaker-visible]) .show-beatmaker-btn {
-        opacity: 0;
-        pointer-events: none;
-        transform: translateY(10px);
-    }
-
-
     .beatmaker-controls {
       display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
+      flex-direction: column;
+      gap: 20px;
       position: relative;
     }
     
+    .beatmaker-controls-row-1 {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
     .beatmaker-controls h3 {
       margin: 0;
       font-weight: 600;
@@ -288,29 +311,6 @@ export class MusicStudio extends LitElement {
       background: rgba(255, 255, 255, 0.2);
     }
 
-    .beatmaker-controls .close-btn {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        background: rgba(0, 0, 0, 0.5);
-        color: white;
-        cursor: pointer;
-        font-size: 1em;
-        font-weight: bold;
-        transition: background-color 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .beatmaker-controls .close-btn:hover {
-        background: rgba(255, 255, 255, 0.2);
-    }
-
     .beatmaker-sub-controls {
       display: flex;
       gap: 15px;
@@ -318,6 +318,10 @@ export class MusicStudio extends LitElement {
       flex-wrap: wrap;
       flex-grow: 1;
       justify-content: flex-end;
+    }
+
+    .beatmaker-tempo-control {
+      width: 100%;
     }
 
     .tempo-control {
@@ -454,11 +458,75 @@ export class MusicStudio extends LitElement {
       flex-shrink: 0;
     }
 
+    .tooltip-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    .info-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 12px;
+      font-weight: bold;
+      cursor: help;
+      user-select: none;
+    }
+
+    .tooltip-text {
+      visibility: hidden;
+      width: 220px;
+      background-color: rgba(10, 5, 20, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      color: #fff;
+      text-align: center;
+      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      position: absolute;
+      z-index: 10;
+      bottom: 150%;
+      left: 50%;
+      margin-left: -110px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      font-size: 13px;
+      line-height: 1.4;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .tooltip-text::after {
+      content: "";
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      margin-left: -5px;
+      border-width: 5px;
+      border-style: solid;
+      border-color: rgba(40, 30, 50, 0.9) transparent transparent transparent;
+    }
+
+    .tooltip-container:hover .tooltip-text {
+      visibility: visible;
+      opacity: 1;
+    }
+
     @media (max-width: 768px) {
-        #global-controls {
+        #launchpad-controls {
             flex-direction: column;
             align-items: stretch;
             gap: 20px;
+        }
+        #launchpad-controls .control-group.tempo-control {
+            margin-left: 0;
         }
         .control-group {
             justify-content: space-between;
@@ -481,17 +549,17 @@ export class MusicStudio extends LitElement {
 
   @property({ type: String }) playbackState: PlaybackState = 'stopped';
   @property({ type: Number }) audioLevel = 0;
-  @property({ type: Boolean, reflect: true, attribute: 'beatmaker-visible' })
-  private isBeatmakerVisible = false;
-
+  
+  @state() private currentView: 'launchpad' | 'beatmaker' = 'launchpad';
   @state() private prompts: Map<string, Prompt>;
   @state() private filteredPrompts = new Set<string>();
   @state() private showCC = false;
-  @state() private tempo = 120;
+  @state() private launchpadTempo = 120;
   @state() private key = 'C';
   @state() private scale = 'Major';
   
   @state() private beatmakerIsPlaying = false;
+  @state() private beatmakerTempo = 120;
   @state() private currentStep = -1;
   @state() private kickPattern: boolean[] = Array(16).fill(false);
   @state() private snarePattern: boolean[] = Array(16).fill(false);
@@ -519,6 +587,7 @@ export class MusicStudio extends LitElement {
     super();
     this.prompts = new Map(initialPrompts);
     this.drumMachine = new DrumMachine();
+    this.drumMachine.setTempo(this.beatmakerTempo);
     this.drumMachine.addEventListener('step', (e: Event) => {
         this.currentStep = (e as CustomEvent<number>).detail;
     });
@@ -535,10 +604,6 @@ export class MusicStudio extends LitElement {
     (this as any).requestUpdate();
   }
 
-  private toggleBeatmakerVisibility() {
-    this.isBeatmakerVisible = !this.isBeatmakerVisible;
-  }
-
   private handlePromptChanged(e: CustomEvent<Prompt>) {
     const newPrompt = e.detail;
     this.prompts.set(newPrompt.promptId, newPrompt);
@@ -551,7 +616,7 @@ export class MusicStudio extends LitElement {
     // Append key, scale, and tempo to prompts before dispatching
     const promptsWithContext = new Map<string, Prompt>();
     for (const [id, prompt] of this.prompts.entries()) {
-      const newText = `${prompt.text} in ${this.key} ${this.scale} at ${this.tempo} BPM`;
+      const newText = `${prompt.text} in ${this.key} ${this.scale} at ${this.launchpadTempo} BPM`;
       promptsWithContext.set(id, {...prompt, text: newText});
     }
     // FIX: Cast to any to fix incorrect type inference for LitElement custom elements.
@@ -576,23 +641,40 @@ export class MusicStudio extends LitElement {
     }
   }
 
-  private updateTempo(newTempo: number) {
-    this.tempo = Math.max(60, Math.min(180, newTempo));
-    this.drumMachine.setTempo(this.tempo);
+  private updateLaunchpadTempo(newTempo: number) {
+    this.launchpadTempo = Math.max(60, Math.min(180, newTempo));
     this.updateMusicalContext();
   }
 
-  private handleTempoChange(e: Event) {
+  private handleLaunchpadTempoChange(e: Event) {
     const newTempo = parseInt((e.target as HTMLInputElement).value, 10);
-    this.updateTempo(newTempo);
+    this.updateLaunchpadTempo(newTempo);
   }
 
-  private handleTempoIncrement() {
-    this.updateTempo(this.tempo + 1);
+  private handleLaunchpadTempoIncrement() {
+    this.updateLaunchpadTempo(this.launchpadTempo + 1);
   }
 
-  private handleTempoDecrement() {
-    this.updateTempo(this.tempo - 1);
+  private handleLaunchpadTempoDecrement() {
+    this.updateLaunchpadTempo(this.launchpadTempo - 1);
+  }
+  
+  private updateBeatmakerTempo(newTempo: number) {
+    this.beatmakerTempo = Math.max(60, Math.min(180, newTempo));
+    this.drumMachine.setTempo(this.beatmakerTempo);
+  }
+
+  private handleBeatmakerTempoChange(e: Event) {
+    const newTempo = parseInt((e.target as HTMLInputElement).value, 10);
+    this.updateBeatmakerTempo(newTempo);
+  }
+
+  private handleBeatmakerTempoIncrement() {
+    this.updateBeatmakerTempo(this.beatmakerTempo + 1);
+  }
+
+  private handleBeatmakerTempoDecrement() {
+    this.updateBeatmakerTempo(this.beatmakerTempo - 1);
   }
 
   private handleKeyChange(e: Event) {
@@ -694,18 +776,41 @@ export class MusicStudio extends LitElement {
   private renderBeatmakerPauseIcon() {
       return svg`<svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="white"/></svg>`;
   }
-
-  // FIX: Removed 'override' keyword.
-  render() {
-    const visualizerBars = Array(24).fill(0);
-    const displayedInstruments = this.kitSize === 'simple'
-        ? ALL_INSTRUMENTS.slice(0, 3)
-        : ALL_INSTRUMENTS;
-
+  
+  private renderLaunchpadView() {
+    const numBars = 80;
+    const visualizerBars = Array(numBars).fill(0);
     return html`
-      <div id="studio-body">
-        <div id="launchpad-section">
+        <div class="view-container">
             <h2>Launchpad</h2>
+
+            <div id="launchpad-player">
+                <play-pause-button
+                .playbackState=${this.playbackState}
+                @click=${this.handlePlayPause}
+                ></play-pause-button>
+                <div id="visualizer">
+                    ${visualizerBars.map((_, i) => {
+                        const center = numBars / 2;
+                        const sensitivity = 1.8;
+                        const dropoff = 0.025;
+                        let height = (this.audioLevel * sensitivity) - (Math.abs(i - center) * dropoff);
+                        height = Math.max(0, Math.min(1, height)); // Clamp height between 0 and 1
+                        
+                        const startHue = 160; 
+                        const endHue = 290;
+                        const hue = startHue + (i / (numBars - 1)) * (endHue - startHue);
+                        const color = `hsl(${hue}, 85%, 65%)`;
+
+                        const style = styleMap({ 
+                            height: `${height * 100}%`,
+                            backgroundColor: color
+                        });
+                        return html`<div class="vis-bar" style=${style}></div>`;
+                    })}
+                </div>
+            </div>
+
             <div id="launchpad">
             ${map(this.prompts.values(), (prompt) => html`
                 <launchpad-button
@@ -721,96 +826,124 @@ export class MusicStudio extends LitElement {
                 ></launchpad-button>
             `)}
             </div>
-        </div>
-
-        <div id="global-controls">
-            <div class="control-group">
-                <play-pause-button
-                .playbackState=${this.playbackState}
-                @click=${this.handlePlayPause}
-                ></play-pause-button>
-                <div id="visualizer">
-                    ${visualizerBars.map((_, i) => {
-                        const height = Math.max(0, (this.audioLevel * 2) - (Math.abs(i - 12) * 0.05));
-                        const style = styleMap({ height: `${height * 100}%` });
-                        return html`<div class="vis-bar" style=${style}></div>`;
-                    })}
+            <div id="launchpad-controls">
+                <div class="control-group tempo-control">
+                    <label for="tempo">Tempo</label>
+                    <button class="tempo-btn" @click=${this.handleLaunchpadTempoDecrement} aria-label="Decrease tempo">-</button>
+                    <span class="tempo-value">${this.launchpadTempo} BPM</span>
+                    <button class="tempo-btn" @click=${this.handleLaunchpadTempoIncrement} aria-label="Increase tempo">+</button>
+                    <input type="range" id="tempo" min="60" max="180" .value=${this.launchpadTempo} @input=${this.handleLaunchpadTempoChange}>
+                </div>
+                <div class="control-group">
+                    <label for="key">Key</label>
+                    <select id="key" @change=${this.handleKeyChange}>
+                        ${KEYS.map(k => html`<option .value=${k} ?selected=${k === this.key}>${k}</option>`)}
+                    </select>
+                    <label for="scale">Scale</label>
+                    <select id="scale" @change=${this.handleScaleChange}>
+                        ${SCALES.map(s => html`<option .value=${s} ?selected=${s === this.scale}>${s}</option>`)}
+                    </select>
+                </div>
+                <div class="control-group">
+                    <label>
+                        <input type="checkbox" @change=${(e: Event) => this.showCC = (e.target as HTMLInputElement).checked}>
+                        MIDI CC
+                    </label>
+                    <div class="tooltip-container">
+                        <span class="info-icon">?</span>
+                        <span class="tooltip-text">Connect a MIDI device to assign pads to CCs for hands-on control.</span>
+                    </div>
                 </div>
             </div>
-            <div class="control-group tempo-control">
-                <label for="tempo">Tempo</label>
-                <button class="tempo-btn" @click=${this.handleTempoDecrement} aria-label="Decrease tempo">-</button>
-                <span class="tempo-value">${this.tempo} BPM</span>
-                <button class="tempo-btn" @click=${this.handleTempoIncrement} aria-label="Increase tempo">+</button>
-                <input type="range" id="tempo" min="60" max="180" .value=${this.tempo} @input=${this.handleTempoChange}>
-            </div>
-            <div class="control-group">
-                <label for="key">Key</label>
-                <select id="key" @change=${this.handleKeyChange}>
-                    ${KEYS.map(k => html`<option .value=${k} ?selected=${k === this.key}>${k}</option>`)}
-                </select>
-                <label for="scale">Scale</label>
-                <select id="scale" @change=${this.handleScaleChange}>
-                    ${SCALES.map(s => html`<option .value=${s} ?selected=${s === this.scale}>${s}</option>`)}
-                </select>
-            </div>
-            <div class="control-group">
-                <label>
-                    <input type="checkbox" @change=${(e: Event) => this.showCC = (e.target as HTMLInputElement).checked}>
-                    MIDI CC
-                </label>
-            </div>
         </div>
+    `;
+  }
 
-        <div id="beatmaker">
-            <div class="beatmaker-controls">
-                <h3>Beatmaker</h3>
-                <button class="beatmaker-play-pause" @click=${this.toggleBeatmakerPlayback} aria-label="Play or pause beatmaker">
-                  ${this.beatmakerIsPlaying ? this.renderBeatmakerPauseIcon() : this.renderBeatmakerPlayIcon()}
-                </button>
-                <div class="beatmaker-sub-controls">
-                    <div class="control-group">
-                        <label for="kit-size">Kit:</label>
-                        <select id="kit-size" @change=${this.handleKitSizeChange}>
-                            <option value="simple" ?selected=${this.kitSize === 'simple'}>Simple</option>
-                            <option value="extended" ?selected=${this.kitSize === 'extended'}>Extended</option>
-                        </select>
-                    </div>
-                    <div class="control-group">
-                        <label for="drum-kit">Sound:</label>
-                        <select id="drum-kit" @change=${this.handleKitChange}>
-                            ${KITS.map(k => html`<option .value=${k} ?selected=${k === this.selectedKit}>${k}</option>`)}
-                        </select>
-                    </div>
-                    <div class="control-group">
-                        <button class="action-button" @click=${this.handleGeneratePattern}>Generate</button>
-                        <button class="action-button clear" @click=${this.clearAllPatterns}>Clear</button>
-                    </div>
-                </div>
-                <button class="close-btn" @click=${this.toggleBeatmakerVisibility} aria-label="Close Beatmaker">✕</button>
-            </div>
-            <div class="sequencer-container">
-                <div id="sequencer">
-                    <div class="sequencer-header-label"></div>
-                    ${Array.from({ length: 16 }).map((_, i) => html`
-                        <div class="sequencer-header-step ${Math.floor(i / 4) % 2 === 1 ? 'beat-group-alt' : ''}">
-                            ${i + 1}
+  private renderBeatmakerView() {
+    const displayedInstruments = this.kitSize === 'simple'
+        ? ALL_INSTRUMENTS.slice(0, 3)
+        : ALL_INSTRUMENTS;
+
+    return html`
+        <div class="view-container">
+            <h2>Beatmaker</h2>
+            <div id="beatmaker">
+                <div class="beatmaker-controls">
+                    <div class="beatmaker-controls-row-1">
+                        <h3>Controls</h3>
+                        <button class="beatmaker-play-pause" @click=${this.toggleBeatmakerPlayback} aria-label="Play or pause beatmaker">
+                        ${this.beatmakerIsPlaying ? this.renderBeatmakerPauseIcon() : this.renderBeatmakerPlayIcon()}
+                        </button>
+                        <div class="beatmaker-sub-controls">
+                            <div class="control-group">
+                                <label for="kit-size">Kit:</label>
+                                <select id="kit-size" @change=${this.handleKitSizeChange}>
+                                    <option value="simple" ?selected=${this.kitSize === 'simple'}>Simple</option>
+                                    <option value="extended" ?selected=${this.kitSize === 'extended'}>Extended</option>
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <label for="drum-kit">Sound:</label>
+                                <select id="drum-kit" @change=${this.handleKitChange}>
+                                    ${KITS.map(k => html`<option .value=${k} ?selected=${k === this.selectedKit}>${k}</option>`)}
+                                </select>
+                            </div>
+                            <div class="control-group">
+                                <button class="action-button" @click=${this.handleGeneratePattern}>Generate</button>
+                                <button class="action-button clear" @click=${this.clearAllPatterns}>Clear</button>
+                            </div>
                         </div>
-                    `)}
-
-                    ${displayedInstruments.map(instrument => html`
-                        <div class="instrument-label">${instrument}</div>
-                        ${this.patterns[instrument as keyof typeof this.patterns].map((active, i) => html`
-                            <div 
-                                class="step ${active ? 'active' : ''} ${i === this.currentStep ? 'current' : ''} ${Math.floor(i / 4) % 2 === 1 ? 'beat-group-alt' : ''}"
-                                @click=${() => this.toggleStep(instrument as any, i)}>
+                    </div>
+                    <div class="control-group tempo-control beatmaker-tempo-control">
+                        <label for="beatmaker-tempo">Tempo</label>
+                        <button class="tempo-btn" @click=${this.handleBeatmakerTempoDecrement} aria-label="Decrease beatmaker tempo">-</button>
+                        <span class="tempo-value">${this.beatmakerTempo} BPM</span>
+                        <button class="tempo-btn" @click=${this.handleBeatmakerTempoIncrement} aria-label="Increase beatmaker tempo">+</button>
+                        <input type="range" id="beatmaker-tempo" min="60" max="180" .value=${this.beatmakerTempo} @input=${this.handleBeatmakerTempoChange}>
+                    </div>
+                </div>
+                <div class="sequencer-container">
+                    <div id="sequencer">
+                        <div class="sequencer-header-label"></div>
+                        ${Array.from({ length: 16 }).map((_, i) => html`
+                            <div class="sequencer-header-step ${Math.floor(i / 4) % 2 === 1 ? 'beat-group-alt' : ''}">
+                                ${i + 1}
                             </div>
                         `)}
-                    `)}
+
+                        ${displayedInstruments.map(instrument => html`
+                            <div class="instrument-label">${instrument}</div>
+                            ${this.patterns[instrument as keyof typeof this.patterns].map((active, i) => html`
+                                <div 
+                                    class="step ${active ? 'active' : ''} ${i === this.currentStep ? 'current' : ''} ${Math.floor(i / 4) % 2 === 1 ? 'beat-group-alt' : ''}"
+                                    @click=${() => this.toggleStep(instrument as any, i)}>
+                                </div>
+                            `)}
+                        `)}
+                    </div>
                 </div>
             </div>
         </div>
-        <button class="action-button show-beatmaker-btn" @click=${this.toggleBeatmakerVisibility}>Show Beatmaker</button>
+    `;
+  }
+
+  // FIX: Removed 'override' keyword.
+  render() {
+    return html`
+      <nav id="app-menu">
+        <button 
+            class="menu-btn ${classMap({ active: this.currentView === 'launchpad' })}" 
+            @click=${() => this.currentView = 'launchpad'}>
+            Launchpad
+        </button>
+        <button 
+            class="menu-btn ${classMap({ active: this.currentView === 'beatmaker' })}"
+            @click=${() => this.currentView = 'beatmaker'}>
+            Beatmaker
+        </button>
+      </nav>
+      <div id="studio-body">
+        ${this.currentView === 'launchpad' ? this.renderLaunchpadView() : this.renderBeatmakerView()}
       </div>
       <footer>Created for musicians by Noam Cohen.</footer>
     `;

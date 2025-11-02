@@ -75,6 +75,12 @@ export class LaunchpadButton extends LitElement {
       text-align: center;
       color: #fff;
       text-shadow: 0 0 5px rgba(0,0,0,0.5);
+      transition: color 0.2s, text-shadow 0.2s;
+    }
+    
+    .pad.active #text {
+      color: rgba(0, 0, 0, 0.8);
+      text-shadow: 0 0 6px rgba(255, 255, 255, 0.3);
     }
 
     @media only screen and (max-width: 600px) {
