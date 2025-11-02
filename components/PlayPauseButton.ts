@@ -75,14 +75,14 @@ export class PlayPauseButton extends LitElement {
   }
 
   private renderPause() {
-    return svg`<path
-      d="M52 30H58V60H52V30Z M32 30H38V60H32V30Z"
-      fill="white"
-    />`;
+    return svg`
+      <rect x="32" y="28" width="10" height="34" rx="2" fill="white" />
+      <rect x="50" y="28" width="10" height="34" rx="2" fill="white" />
+    `;
   }
 
   private renderPlay() {
-    return svg`<path d="M36 62V28L62 45L36 62Z" fill="white" />`;
+    return svg`<path d="M36 28L62 45L36 62V28Z" fill="white" />`;
   }
 
 

@@ -7,7 +7,7 @@ import './PlayPauseButton';
 import './PromptController';
 import './WeightKnob';
 
-import { css, html, LitElement } from 'lit';
+import { css, html, LitElement, svg } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -72,7 +72,7 @@ export class MusicStudio extends LitElement {
       max-height: 100vh;
       box-sizing: border-box;
       color: white;
-      font-family: sans-serif;
+      font-family: 'Inter', sans-serif;
       overflow-y: auto;
       position: relative;
     }
@@ -81,24 +81,26 @@ export class MusicStudio extends LitElement {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 20px;
-      gap: 15px;
+      padding: 15px 25px;
+      gap: 20px;
       flex-wrap: wrap;
-      margin: 15px;
-      border-radius: 12px;
+      border-radius: 18px;
+      width: 100%;
+      max-width: 900px;
+      box-sizing: border-box;
       
       /* Glassmorphism */
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      background: rgba(20, 10, 30, 0.5);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     }
 
     .control-group {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
     }
 
     .control-group label {
@@ -107,29 +109,39 @@ export class MusicStudio extends LitElement {
     }
 
     .control-group select, .control-group input[type="range"] {
-      background: rgba(0, 0, 0, 0.2);
+      background: rgba(0, 0, 0, 0.3);
       color: white;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 4px;
-      padding: 5px;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .control-group input[type="range"] {
+      padding: 0;
+      height: 5px;
+      accent-color: #9900ff;
     }
     
     .control-group input[type="checkbox"] {
-      margin-right: 5px;
+      width: 16px;
+      height: 16px;
+      accent-color: #9900ff;
     }
 
     .action-button {
-      background: rgba(0, 0, 0, 0.2);
+      background: rgba(255, 255, 255, 0.1);
       color: white;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 4px;
-      padding: 5px 10px;
+      border-radius: 8px;
+      padding: 8px 15px;
       font-size: 0.9em;
+      font-weight: 500;
       cursor: pointer;
       transition: background-color 0.2s, border-color 0.2s;
     }
     .action-button:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.2);
         border-color: rgba(255, 255, 255, 0.4);
     }
     .action-button.clear {
@@ -162,35 +174,41 @@ export class MusicStudio extends LitElement {
       align-items: center;
       justify-content: center;
       gap: 30px;
-      padding: 0 20px 30px 20px;
+      padding: 30px 20px;
       box-sizing: border-box;
       transition: justify-content 0.5s ease;
     }
 
     :host([beatmaker-visible]) #studio-body {
-        justify-content: space-between;
+        justify-content: flex-start;
     }
 
     #launchpad-section {
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 15px;
+      gap: 20px;
       width: 100%;
     }
 
     #launchpad-section h2 {
       margin: 0;
-      font-weight: 600;
-      text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+      font-size: clamp(2em, 5vw, 2.5em);
+      font-weight: 700;
+      letter-spacing: -1px;
+      text-align: center;
+      background: linear-gradient(45deg, #ff25f6, #2af6de);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(255, 37, 246, 0.3);
     }
     
     #launchpad {
       display: grid;
-      grid-template-columns: repeat(8, 1fr);
+      grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
       gap: 15px;
       width: 100%;
-      max-width: 800px;
+      max-width: 900px;
     }
 
     #beatmaker {
@@ -198,17 +216,16 @@ export class MusicStudio extends LitElement {
       max-width: 900px;
       padding: 20px;
       box-sizing: border-box;
-      border-radius: 12px;
-      /* Removed margin-top: auto; to let flexbox handle spacing */
+      border-radius: 18px;
       transition: all 0.5s ease;
       overflow: hidden;
 
       /* Glassmorphism */
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      background: rgba(20, 10, 30, 0.5);
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     }
 
     :host(:not([beatmaker-visible])) #beatmaker {
@@ -222,8 +239,10 @@ export class MusicStudio extends LitElement {
     }
 
     .show-beatmaker-btn {
-        padding: 10px 20px;
+        padding: 12px 24px;
         font-weight: 600;
+        font-size: 1em;
+        border-radius: 25px;
         transition: opacity 0.4s ease, transform 0.4s ease;
     }
     
@@ -243,29 +262,30 @@ export class MusicStudio extends LitElement {
       position: relative;
     }
     
-    .beatmaker-controls .play-button {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: none;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: white;
-      cursor: pointer;
-      font-size: 1.2em;
-      transition: background-color 0.2s, box-shadow 0.2s;
-    }
-    .beatmaker-controls .play-button.playing {
-      background: #3dffab;
-      color: #111;
-      box-shadow: 0 0 10px #3dffab;
-    }
-
     .beatmaker-controls h3 {
       margin: 0;
       font-weight: 600;
+      font-size: 1.5em;
       text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-      flex-grow: 1;
+    }
+
+    .beatmaker-play-pause {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      padding: 0;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+      flex-shrink: 0; /* prevent shrinking */
+    }
+
+    .beatmaker-play-pause:hover {
+      background: rgba(255, 255, 255, 0.2);
     }
 
     .beatmaker-controls .close-btn {
@@ -282,6 +302,9 @@ export class MusicStudio extends LitElement {
         font-size: 1em;
         font-weight: bold;
         transition: background-color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .beatmaker-controls .close-btn:hover {
@@ -293,6 +316,8 @@ export class MusicStudio extends LitElement {
       gap: 15px;
       align-items: center;
       flex-wrap: wrap;
+      flex-grow: 1;
+      justify-content: flex-end;
     }
 
     .tempo-control {
@@ -303,35 +328,52 @@ export class MusicStudio extends LitElement {
 
     .tempo-control .tempo-value {
       font-family: monospace;
-      font-size: 0.95em;
-      width: 65px;
+      font-size: 1em;
+      width: 70px;
       text-align: center;
-      background: rgba(0,0,0,0.2);
-      padding: 5px 0;
-      border-radius: 4px;
+      background: rgba(0,0,0,0.3);
+      padding: 8px 0;
+      border-radius: 6px;
       border: 1px solid rgba(255, 255, 255, 0.2);
     }
 
     .tempo-btn {
-      width: 28px;
-      height: 28px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      background: rgba(0, 0, 0, 0.3);
+      background: rgba(255, 255, 255, 0.1);
       color: white;
       cursor: pointer;
       font-weight: bold;
-      font-size: 1.1em;
+      font-size: 1.2em;
       display: flex;
       align-items: center;
       justify-content: center;
       line-height: 1;
       transition: background-color 0.2s;
-      padding-bottom: 2px;
-      box-sizing: border-box;
     }
     .tempo-btn:hover {
-        background: rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.2);
+    }
+
+    .sequencer-container {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: #9900ff rgba(0,0,0,0.2);
+    }
+    
+    .sequencer-container::-webkit-scrollbar {
+        height: 8px;
+    }
+    .sequencer-container::-webkit-scrollbar-track {
+        background: rgba(0,0,0,0.2);
+        border-radius: 4px;
+    }
+    .sequencer-container::-webkit-scrollbar-thumb {
+        background-color: #9900ff;
+        border-radius: 4px;
     }
 
     #sequencer {
@@ -339,16 +381,12 @@ export class MusicStudio extends LitElement {
       grid-template-columns: 80px repeat(16, 1fr);
       gap: 5px;
     }
-
-    .sequencer-header-label {
-      /* Empty cell for alignment */
-    }
     
     .sequencer-header-step {
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 500;
       color: rgba(255, 255, 255, 0.5);
       user-select: none;
@@ -360,21 +398,22 @@ export class MusicStudio extends LitElement {
       align-items: center;
       justify-content: center;
       font-weight: 600;
-      font-size: 0.85em;
+      font-size: 0.9em;
       text-transform: capitalize;
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 4px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
 
     .step {
       aspect-ratio: 1;
-      border-radius: 4px;
+      border-radius: 6px;
       background-color: rgba(0, 0, 0, 0.2);
       cursor: pointer;
       border: 1px solid rgba(255, 255, 255, 0.1);
       transition: all 0.15s ease-out;
       position: relative;
+      min-width: 40px;
     }
 
     .beat-group-alt {
@@ -384,7 +423,7 @@ export class MusicStudio extends LitElement {
     .step.active {
       background-color: #9900ff;
       border-color: #c78eff;
-      box-shadow: 0 0 12px -2px #9900ff;
+      box-shadow: 0 0 15px -2px #9900ff;
     }
 
     .step.current::after {
@@ -395,20 +434,14 @@ export class MusicStudio extends LitElement {
         right: -2px;
         bottom: -2px;
         border: 2px solid #ffdd28;
-        border-radius: 6px;
+        border-radius: 8px;
         pointer-events: none;
         animation: pulse-yellow 0.7s infinite alternate;
     }
 
     @keyframes pulse-yellow {
-        from {
-            box-shadow: 0 0 2px #ffdd28;
-            opacity: 0.7;
-        }
-        to {
-            box-shadow: 0 0 6px #ffdd28;
-            opacity: 1;
-        }
+        from { box-shadow: 0 0 3px #ffdd28; opacity: 0.7; }
+        to { box-shadow: 0 0 8px #ffdd28; opacity: 1; }
     }
 
     footer {
@@ -419,6 +452,30 @@ export class MusicStudio extends LitElement {
       color: rgba(255, 255, 255, 0.4);
       pointer-events: none;
       flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+        #global-controls {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 20px;
+        }
+        .control-group {
+            justify-content: space-between;
+        }
+        .tempo-control {
+          width: 100%;
+          justify-content: center;
+        }
+        #sequencer {
+            width: max-content; /* Make grid wider than container */
+        }
+        .instrument-label {
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            background: rgba(28, 18, 41, 0.9);
+        }
     }
   `;
 
@@ -471,7 +528,7 @@ export class MusicStudio extends LitElement {
       (this as any).dispatchEvent(new CustomEvent('error', { detail: e.message }));
     });
   }
-
+  
   addFilteredPrompt(text: string) {
     this.filteredPrompts.add(text);
     // FIX: Cast to any to fix incorrect type inference for LitElement custom elements.
@@ -506,10 +563,23 @@ export class MusicStudio extends LitElement {
     (this as any).dispatchEvent(new CustomEvent('play-pause'));
   }
 
+  private async updateMusicalContext() {
+    this.dispatchPromptsChanged();
+    // If we are already playing, we need to briefly pause and resume to apply
+    // the new musical context to the live music session.
+    if (this.playbackState === 'playing') {
+      const wasPlaying = true;
+      (this as any).dispatchEvent(new CustomEvent('play-pause', { detail: { shouldPause: true } }));
+      // Give a moment for the pause to register
+      await new Promise(resolve => setTimeout(resolve, 50));
+      (this as any).dispatchEvent(new CustomEvent('play-pause', { detail: { shouldPlay: wasPlaying } }));
+    }
+  }
+
   private updateTempo(newTempo: number) {
     this.tempo = Math.max(60, Math.min(180, newTempo));
     this.drumMachine.setTempo(this.tempo);
-    this.dispatchPromptsChanged();
+    this.updateMusicalContext();
   }
 
   private handleTempoChange(e: Event) {
@@ -527,23 +597,12 @@ export class MusicStudio extends LitElement {
 
   private handleKeyChange(e: Event) {
     this.key = (e.target as HTMLSelectElement).value;
-    this.dispatchPromptsChanged();
+    this.updateMusicalContext();
   }
 
   private handleScaleChange(e: Event) {
     this.scale = (e.target as HTMLSelectElement).value;
-    this.dispatchPromptsChanged();
-  }
-
-  private handleBeatmakerPlayPause() {
-    this.beatmakerIsPlaying = !this.beatmakerIsPlaying;
-    if (this.beatmakerIsPlaying) {
-      this.drumMachine.resumeContext(); // Important for starting audio
-      this.drumMachine.start();
-    } else {
-      this.drumMachine.stop();
-      this.currentStep = -1;
-    }
+    this.updateMusicalContext();
   }
 
   private toggleStep(instrument: keyof typeof this.patterns, stepIndex: number) {
@@ -617,6 +676,25 @@ export class MusicStudio extends LitElement {
     this.requestUpdate();
   }
 
+  private toggleBeatmakerPlayback() {
+    this.beatmakerIsPlaying = !this.beatmakerIsPlaying;
+    if (this.beatmakerIsPlaying) {
+        this.drumMachine.resumeContext();
+        this.drumMachine.start();
+    } else {
+        this.drumMachine.stop();
+        this.currentStep = -1;
+    }
+  }
+
+  private renderBeatmakerPlayIcon() {
+      return svg`<svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z" fill="white"/></svg>`;
+  }
+
+  private renderBeatmakerPauseIcon() {
+      return svg`<svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="white"/></svg>`;
+  }
+
   // FIX: Removed 'override' keyword.
   render() {
     const visualizerBars = Array(24).fill(0);
@@ -625,45 +703,6 @@ export class MusicStudio extends LitElement {
         : ALL_INSTRUMENTS;
 
     return html`
-      <div id="global-controls">
-        <div class="control-group">
-            <play-pause-button
-            .playbackState=${this.playbackState}
-            @click=${this.handlePlayPause}
-            ></play-pause-button>
-            <div id="visualizer">
-                ${visualizerBars.map((_, i) => {
-                    const height = Math.max(0, (this.audioLevel * 2) - (Math.abs(i - 12) * 0.05));
-                    const style = styleMap({ height: `${height * 100}%` });
-                    return html`<div class="vis-bar" style=${style}></div>`;
-                })}
-            </div>
-        </div>
-        <div class="control-group tempo-control">
-            <label for="tempo">Tempo:</label>
-            <button class="tempo-btn" @click=${this.handleTempoDecrement} aria-label="Decrease tempo">-</button>
-            <span class="tempo-value">${this.tempo} BPM</span>
-            <button class="tempo-btn" @click=${this.handleTempoIncrement} aria-label="Increase tempo">+</button>
-            <input type="range" id="tempo" min="60" max="180" .value=${this.tempo} @input=${this.handleTempoChange}>
-        </div>
-        <div class="control-group">
-            <label for="key">Key:</label>
-            <select id="key" @change=${this.handleKeyChange}>
-                ${KEYS.map(k => html`<option .value=${k} ?selected=${k === this.key}>${k}</option>`)}
-            </select>
-            <label for="scale">Scale:</label>
-            <select id="scale" @change=${this.handleScaleChange}>
-                ${SCALES.map(s => html`<option .value=${s} ?selected=${s === this.scale}>${s}</option>`)}
-            </select>
-        </div>
-        <div class="control-group">
-            <label>
-                <input type="checkbox" @change=${(e: Event) => this.showCC = (e.target as HTMLInputElement).checked}>
-                Show MIDI CC
-            </label>
-        </div>
-      </div>
-
       <div id="studio-body">
         <div id="launchpad-section">
             <h2>Launchpad</h2>
@@ -684,12 +723,51 @@ export class MusicStudio extends LitElement {
             </div>
         </div>
 
+        <div id="global-controls">
+            <div class="control-group">
+                <play-pause-button
+                .playbackState=${this.playbackState}
+                @click=${this.handlePlayPause}
+                ></play-pause-button>
+                <div id="visualizer">
+                    ${visualizerBars.map((_, i) => {
+                        const height = Math.max(0, (this.audioLevel * 2) - (Math.abs(i - 12) * 0.05));
+                        const style = styleMap({ height: `${height * 100}%` });
+                        return html`<div class="vis-bar" style=${style}></div>`;
+                    })}
+                </div>
+            </div>
+            <div class="control-group tempo-control">
+                <label for="tempo">Tempo</label>
+                <button class="tempo-btn" @click=${this.handleTempoDecrement} aria-label="Decrease tempo">-</button>
+                <span class="tempo-value">${this.tempo} BPM</span>
+                <button class="tempo-btn" @click=${this.handleTempoIncrement} aria-label="Increase tempo">+</button>
+                <input type="range" id="tempo" min="60" max="180" .value=${this.tempo} @input=${this.handleTempoChange}>
+            </div>
+            <div class="control-group">
+                <label for="key">Key</label>
+                <select id="key" @change=${this.handleKeyChange}>
+                    ${KEYS.map(k => html`<option .value=${k} ?selected=${k === this.key}>${k}</option>`)}
+                </select>
+                <label for="scale">Scale</label>
+                <select id="scale" @change=${this.handleScaleChange}>
+                    ${SCALES.map(s => html`<option .value=${s} ?selected=${s === this.scale}>${s}</option>`)}
+                </select>
+            </div>
+            <div class="control-group">
+                <label>
+                    <input type="checkbox" @change=${(e: Event) => this.showCC = (e.target as HTMLInputElement).checked}>
+                    MIDI CC
+                </label>
+            </div>
+        </div>
+
         <div id="beatmaker">
             <div class="beatmaker-controls">
-                <button class="play-button ${this.beatmakerIsPlaying ? 'playing' : ''}" @click=${this.handleBeatmakerPlayPause}>
-                    ${this.beatmakerIsPlaying ? '❚❚' : '▶'}
-                </button>
                 <h3>Beatmaker</h3>
+                <button class="beatmaker-play-pause" @click=${this.toggleBeatmakerPlayback} aria-label="Play or pause beatmaker">
+                  ${this.beatmakerIsPlaying ? this.renderBeatmakerPauseIcon() : this.renderBeatmakerPlayIcon()}
+                </button>
                 <div class="beatmaker-sub-controls">
                     <div class="control-group">
                         <label for="kit-size">Kit:</label>
@@ -709,25 +787,27 @@ export class MusicStudio extends LitElement {
                         <button class="action-button clear" @click=${this.clearAllPatterns}>Clear</button>
                     </div>
                 </div>
-                <button class="close-btn" @click=${this.toggleBeatmakerVisibility}>✕</button>
+                <button class="close-btn" @click=${this.toggleBeatmakerVisibility} aria-label="Close Beatmaker">✕</button>
             </div>
-            <div id="sequencer">
-                <div class="sequencer-header-label"></div>
-                ${Array.from({ length: 16 }).map((_, i) => html`
-                    <div class="sequencer-header-step ${Math.floor(i / 4) % 2 === 1 ? 'beat-group-alt' : ''}">
-                        ${i + 1}
-                    </div>
-                `)}
-
-                ${displayedInstruments.map(instrument => html`
-                    <div class="instrument-label">${instrument}</div>
-                    ${this.patterns[instrument as keyof typeof this.patterns].map((active, i) => html`
-                        <div 
-                            class="step ${active ? 'active' : ''} ${i === this.currentStep ? 'current' : ''} ${Math.floor(i / 4) % 2 === 1 ? 'beat-group-alt' : ''}"
-                            @click=${() => this.toggleStep(instrument as any, i)}>
+            <div class="sequencer-container">
+                <div id="sequencer">
+                    <div class="sequencer-header-label"></div>
+                    ${Array.from({ length: 16 }).map((_, i) => html`
+                        <div class="sequencer-header-step ${Math.floor(i / 4) % 2 === 1 ? 'beat-group-alt' : ''}">
+                            ${i + 1}
                         </div>
                     `)}
-                `)}
+
+                    ${displayedInstruments.map(instrument => html`
+                        <div class="instrument-label">${instrument}</div>
+                        ${this.patterns[instrument as keyof typeof this.patterns].map((active, i) => html`
+                            <div 
+                                class="step ${active ? 'active' : ''} ${i === this.currentStep ? 'current' : ''} ${Math.floor(i / 4) % 2 === 1 ? 'beat-group-alt' : ''}"
+                                @click=${() => this.toggleStep(instrument as any, i)}>
+                            </div>
+                        `)}
+                    `)}
+                </div>
             </div>
         </div>
         <button class="action-button show-beatmaker-btn" @click=${this.toggleBeatmakerVisibility}>Show Beatmaker</button>

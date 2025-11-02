@@ -22,7 +22,7 @@ export class LaunchpadButton extends LitElement {
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      border-radius: 8px;
+      border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.2);
       background-color: rgba(0, 0, 0, 0.2);
       cursor: pointer;
@@ -38,7 +38,8 @@ export class LaunchpadButton extends LitElement {
     }
     .pad.active {
       background-color: var(--pad-color);
-      box-shadow: 0 0 20px -2px var(--pad-color), inset 0px 1px 2px rgba(255, 255, 255, 0.1);
+      box-shadow: 0 0 25px -3px var(--pad-color), inset 0px 1px 2px rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.4);
     }
     .pad.filtered {
       background-color: #da2000;
@@ -48,16 +49,16 @@ export class LaunchpadButton extends LitElement {
     #midi {
       font-family: monospace;
       text-align: center;
-      font-size: 1.5vmin;
+      font-size: 11px;
       border: 1px solid rgba(255, 255, 255, 0.5);
-      border-radius: 0.5vmin;
+      border-radius: 4px;
       padding: 2px 5px;
       color: #fff;
       background: rgba(0, 0, 0, 0.2);
       cursor: pointer;
       user-select: none;
       position: absolute;
-      bottom: 8%;
+      bottom: 10px;
       visibility: hidden;
       .learn-mode & {
         color: orange;
@@ -69,7 +70,7 @@ export class LaunchpadButton extends LitElement {
     }
     #text {
       font-weight: 500;
-      font-size: 1.8vmin;
+      font-size: clamp(12px, 1.6vmin, 16px);
       padding: 0.1em 0.3em;
       text-align: center;
       color: #fff;
@@ -78,7 +79,7 @@ export class LaunchpadButton extends LitElement {
 
     @media only screen and (max-width: 600px) {
       #text {
-        font-size: 2.3vmin;
+        font-size: 13px;
       }
     }
   `;
