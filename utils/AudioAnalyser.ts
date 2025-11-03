@@ -51,6 +51,7 @@ export class DrumMachine extends EventTarget {
     private timerId: number | null = null;
     private lookahead = 25.0; // How frequently to call scheduler (ms)
     private scheduleAheadTime = 0.1; // How far ahead to schedule audio (s)
+    private loopLength = 16;
 
     private patterns: { [key in Instrument]: boolean[] } = {
         kick: Array(16).fill(false),
@@ -153,7 +154,7 @@ export class DrumMachine extends EventTarget {
         const secondsPerBeat = 60.0 / this.tempo;
         // 16th notes
         this.nextNoteTime += 0.25 * secondsPerBeat; 
-        this.currentStep = (this.currentStep + 1) % 16;
+        this.currentStep = (this.currentStep + 1) % this.loopLength;
         this.dispatchEvent(new CustomEvent('step', { detail: this.currentStep }));
     }
 
@@ -187,6 +188,11 @@ export class DrumMachine extends EventTarget {
 
     public setTempo(newTempo: number) {
         this.tempo = newTempo;
+    }
+
+    public setLoopLength(length: number) {
+        this.loopLength = length;
+        this.currentStep = this.currentStep % this.loopLength;
     }
 
     public setVolume(volume: number) {

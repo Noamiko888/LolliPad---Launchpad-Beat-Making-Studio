@@ -61,6 +61,8 @@ export class ToastMessage extends LitElement {
   @property({ type: String }) message = '';
   @property({ type: Boolean }) showing = false;
 
+  private hideTimeout?: number;
+
   private renderMessageWithLinks() {
     const urlRegex = /(https?:\/\/[^\s]+)/g;
     const parts = this.message.split( urlRegex );
@@ -79,11 +81,21 @@ export class ToastMessage extends LitElement {
   }
 
   show(message: string) {
+    if (this.hideTimeout) {
+      clearTimeout(this.hideTimeout);
+    }
     this.showing = true;
     this.message = message;
+    this.hideTimeout = window.setTimeout(() => {
+      this.hide();
+    }, 2000);
   }
 
   hide() {
+    if (this.hideTimeout) {
+      clearTimeout(this.hideTimeout);
+      this.hideTimeout = undefined;
+    }
     this.showing = false;
   }
 

@@ -20,9 +20,9 @@ import { DrumMachine } from '../utils/AudioAnalyser';
 
 const KEYS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const SCALES = ['Major', 'Minor', 'Dorian', 'Phrygian', 'Lydian', 'Mixolydian', 'Locrian'];
+type Instrument = 'kick' | 'snare' | 'hat' | 'clap' | 'tom' | 'cymbal';
 const ALL_INSTRUMENTS: Instrument[] = ['kick', 'snare', 'hat', 'clap', 'tom', 'cymbal'];
 const KITS = ['Electronic', '808', 'Acoustic', 'Rock', 'Jazz', 'Funk', 'Brush', 'Studio'];
-type Instrument = 'kick' | 'snare' | 'hat' | 'clap' | 'tom' | 'cymbal';
 
 
 const KIT_COLORS: { [key in (typeof KITS)[number]]: { [key in Instrument]: string } } = {
@@ -330,11 +330,6 @@ export class MusicStudio extends LitElement {
       align-items: center;
       flex-wrap: wrap;
       flex-grow: 1;
-      justify-content: flex-end;
-    }
-
-    .beatmaker-tempo-control, .beatmaker-volume-control {
-      width: 100%;
     }
 
     .tempo-control {
@@ -375,13 +370,52 @@ export class MusicStudio extends LitElement {
     }
 
     .beatmaker-volume-control {
-        display: flex;
-        align-items: center;
-        gap: 12px;
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 5px;
+      align-items: center;
+      width: 100%;
     }
 
-    .beatmaker-volume-control input[type="range"] {
-        flex-grow: 1;
+    .beatmaker-volume-control .slider-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .beatmaker-volume-control .control-value {
+      width: 55px;
+      flex-shrink: 0;
+    }
+
+    .beatmaker-volume-control .slider-wrapper input[type="range"] {
+      flex-grow: 1;
+    }
+    
+    .length-selector {
+        display: flex;
+        background: rgba(0,0,0,0.3);
+        border-radius: 8px;
+        padding: 4px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    .length-btn {
+        background: transparent;
+        border: none;
+        color: rgba(255, 255, 255, 0.7);
+        padding: 6px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+    .length-btn:hover {
+        background: rgba(255, 255, 255, 0.1);
+    }
+    .length-btn.active {
+        background: rgba(255, 255, 255, 0.9);
+        color: #0D0B12;
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
     }
 
     .sequencer-container {
@@ -405,7 +439,6 @@ export class MusicStudio extends LitElement {
 
     #sequencer {
       display: grid;
-      grid-template-columns: 80px repeat(16, 1fr);
       gap: 5px;
     }
     
@@ -587,24 +620,18 @@ export class MusicStudio extends LitElement {
   @state() private beatmakerTempo = 120;
   @state() private beatmakerVolume = 1;
   @state() private currentStep = -1;
-  @state() private kickPattern: boolean[] = Array(16).fill(false);
-  @state() private snarePattern: boolean[] = Array(16).fill(false);
-  @state() private hatPattern: boolean[] = Array(16).fill(false);
-  @state() private clapPattern: boolean[] = Array(16).fill(false);
-  @state() private tomPattern: boolean[] = Array(16).fill(false);
-  @state() private cymbalPattern: boolean[] = Array(16).fill(false);
+  @state() private sequencerLength: 4 | 8 | 16 = 8;
+  @state() private patterns: { [key in Instrument]: boolean[] } = {
+    kick: Array(8).fill(false),
+    snare: Array(8).fill(false),
+    hat: Array(8).fill(false),
+    clap: Array(8).fill(false),
+    tom: Array(8).fill(false),
+    cymbal: Array(8).fill(false),
+  };
 
   @state() private kitSize: 'simple' | 'extended' = 'simple';
   @state() private selectedKit: (typeof KITS)[number] = 'Electronic';
-
-  private patterns = {
-    kick: this.kickPattern,
-    snare: this.snarePattern,
-    hat: this.hatPattern,
-    clap: this.clapPattern,
-    tom: this.tomPattern,
-    cymbal: this.cymbalPattern,
-  };
 
   private midiDispatcher = new MidiDispatcher();
   private drumMachine: DrumMachine;
@@ -615,6 +642,11 @@ export class MusicStudio extends LitElement {
     this.drumMachine = new DrumMachine();
     this.drumMachine.setTempo(this.beatmakerTempo);
     this.drumMachine.setVolume(this.beatmakerVolume);
+    this.drumMachine.setLoopLength(this.sequencerLength);
+    for (const instrument of ALL_INSTRUMENTS) {
+        this.drumMachine.updatePattern(instrument, this.patterns[instrument]);
+    }
+
     this.drumMachine.addEventListener('step', (e: Event) => {
         this.currentStep = (e as CustomEvent<number>).detail;
     });
@@ -720,22 +752,14 @@ export class MusicStudio extends LitElement {
     this.updateMusicalContext();
   }
 
-  private toggleStep(instrument: keyof typeof this.patterns, stepIndex: number) {
-    const pattern = [...this.patterns[instrument]];
-    pattern[stepIndex] = !pattern[stepIndex];
-    
-    switch (instrument) {
-        case 'kick': this.kickPattern = pattern; break;
-        case 'snare': this.snarePattern = pattern; break;
-        case 'hat': this.hatPattern = pattern; break;
-        case 'clap': this.clapPattern = pattern; break;
-        case 'tom': this.tomPattern = pattern; break;
-        case 'cymbal': this.cymbalPattern = pattern; break;
-    }
-
-    this.patterns[instrument] = pattern;
-    this.drumMachine.updatePattern(instrument, pattern);
-    this.requestUpdate();
+  private toggleStep(instrument: Instrument, stepIndex: number) {
+    const newPattern = [...this.patterns[instrument]];
+    newPattern[stepIndex] = !newPattern[stepIndex];
+    this.patterns = {
+      ...this.patterns,
+      [instrument]: newPattern
+    };
+    this.drumMachine.updatePattern(instrument, newPattern);
   }
 
   private handleKitSizeChange(e: Event) {
@@ -748,47 +772,53 @@ export class MusicStudio extends LitElement {
     this.drumMachine.setKit(newKit);
   }
 
-  private clearAllPatterns() {
-    ALL_INSTRUMENTS.forEach(instrument => {
-        const clearedPattern = Array(16).fill(false);
-        switch (instrument) {
-            case 'kick': this.kickPattern = clearedPattern; break;
-            case 'snare': this.snarePattern = clearedPattern; break;
-            case 'hat': this.hatPattern = clearedPattern; break;
-            case 'clap': this.clapPattern = clearedPattern; break;
-            case 'tom': this.tomPattern = clearedPattern; break;
-            case 'cymbal': this.cymbalPattern = clearedPattern; break;
+  private handleSequencerLengthChange(newLength: 4 | 8 | 16) {
+    if (newLength === this.sequencerLength) return;
+
+    const oldLength = this.sequencerLength;
+    this.sequencerLength = newLength;
+    this.drumMachine.setLoopLength(newLength);
+
+    const newPatterns = { ...this.patterns };
+    for (const instrument of ALL_INSTRUMENTS) {
+        const oldPattern = this.patterns[instrument];
+        const newPattern = Array(newLength).fill(false);
+        const copyLength = Math.min(oldLength, newLength);
+        for (let i = 0; i < copyLength; i++) {
+            newPattern[i] = oldPattern[i];
         }
-        this.patterns[instrument] = clearedPattern;
+        newPatterns[instrument] = newPattern;
+        this.drumMachine.updatePattern(instrument, newPattern);
+    }
+    this.patterns = newPatterns;
+  }
+
+  private clearAllPatterns() {
+    const newPatterns = { ...this.patterns };
+    for (const instrument of ALL_INSTRUMENTS) {
+        const clearedPattern = Array(this.sequencerLength).fill(false);
+        newPatterns[instrument] = clearedPattern;
         this.drumMachine.updatePattern(instrument, clearedPattern);
-    });
-    this.requestUpdate();
+    }
+    this.patterns = newPatterns;
   }
 
   private handleGeneratePattern() {
-    this.clearAllPatterns();
     const randomBeat = PREMADE_BEATS[Math.floor(Math.random() * PREMADE_BEATS.length)];
+    const newPatterns = { ...this.patterns };
     
-    Object.keys(randomBeat).forEach(instrumentKey => {
-      const instrument = instrumentKey as keyof typeof this.patterns;
-      const pattern = randomBeat[instrument as keyof typeof randomBeat];
-      
-      if (pattern && this.patterns[instrument]) {
-        const newPattern = [...pattern];
-        switch (instrument) {
-            case 'kick': this.kickPattern = newPattern; break;
-            case 'snare': this.snarePattern = newPattern; break;
-            case 'hat': this.hatPattern = newPattern; break;
-            case 'clap': this.clapPattern = newPattern; break;
-            case 'tom': this.tomPattern = newPattern; break;
-            case 'cymbal': this.cymbalPattern = newPattern; break;
+    for (const instrument of ALL_INSTRUMENTS) {
+        const fullPattern = randomBeat[instrument as keyof typeof randomBeat];
+        const newPattern = Array(this.sequencerLength).fill(false);
+        if (fullPattern) {
+            for (let i = 0; i < this.sequencerLength; i++) {
+                newPattern[i] = fullPattern[i] || false;
+            }
         }
-        this.patterns[instrument] = newPattern;
+        newPatterns[instrument] = newPattern;
         this.drumMachine.updatePattern(instrument, newPattern);
-      }
-    });
-    
-    this.requestUpdate();
+    }
+    this.patterns = newPatterns;
   }
 
   private toggleBeatmakerPlayback() {
@@ -922,28 +952,44 @@ export class MusicStudio extends LitElement {
                                 </select>
                             </div>
                             <div class="control-group">
+                                <label>Bars:</label>
+                                <div class="length-selector">
+                                    <button
+                                        class="length-btn ${classMap({active: this.sequencerLength === 4})}"
+                                        @click=${() => this.handleSequencerLengthChange(4)}>4</button>
+                                    <button
+                                        class="length-btn ${classMap({active: this.sequencerLength === 8})}"
+                                        @click=${() => this.handleSequencerLengthChange(8)}>8</button>
+                                    <button
+                                        class="length-btn ${classMap({active: this.sequencerLength === 16})}"
+                                        @click=${() => this.handleSequencerLengthChange(16)}>16</button>
+                                </div>
+                            </div>
+                            <div class="control-group tempo-control">
+                                <label for="beatmaker-tempo">Tempo</label>
+                                <button class="tempo-btn" @click=${this.handleBeatmakerTempoDecrement} aria-label="Decrease beatmaker tempo">-</button>
+                                <span class="control-value">${this.beatmakerTempo} BPM</span>
+                                <button class="tempo-btn" @click=${this.handleBeatmakerTempoIncrement} aria-label="Increase beatmaker tempo">+</button>
+                                <input type="range" id="beatmaker-tempo" min="60" max="180" .value=${this.beatmakerTempo} @input=${this.handleBeatmakerTempoChange}>
+                            </div>
+                            <div class="control-group" style="margin-left: auto;">
                                 <button class="action-button" @click=${this.handleGeneratePattern}>Generate</button>
                                 <button class="action-button clear" @click=${this.clearAllPatterns}>Clear</button>
                             </div>
                         </div>
                     </div>
-                    <div class="control-group tempo-control beatmaker-tempo-control">
-                        <label for="beatmaker-tempo">Tempo</label>
-                        <button class="tempo-btn" @click=${this.handleBeatmakerTempoDecrement} aria-label="Decrease beatmaker tempo">-</button>
-                        <span class="control-value">${this.beatmakerTempo} BPM</span>
-                        <button class="tempo-btn" @click=${this.handleBeatmakerTempoIncrement} aria-label="Increase beatmaker tempo">+</button>
-                        <input type="range" id="beatmaker-tempo" min="60" max="180" .value=${this.beatmakerTempo} @input=${this.handleBeatmakerTempoChange}>
-                    </div>
                     <div class="control-group beatmaker-volume-control">
                         <label for="beatmaker-volume">Volume</label>
-                        <input type="range" id="beatmaker-volume" min="0" max="1" step="0.01" .value=${this.beatmakerVolume} @input=${this.handleBeatmakerVolumeChange} aria-label="Beatmaker Volume">
-                        <span class="control-value">${Math.round(this.beatmakerVolume * 100)}%</span>
+                        <div class="slider-wrapper">
+                            <input type="range" id="beatmaker-volume" min="0" max="1" step="0.01" .value=${this.beatmakerVolume} @input=${this.handleBeatmakerVolumeChange} aria-label="Beatmaker Volume">
+                            <span class="control-value">${Math.round(this.beatmakerVolume * 100)}%</span>
+                        </div>
                     </div>
                 </div>
                 <div class="sequencer-container">
-                    <div id="sequencer">
+                    <div id="sequencer" style=${styleMap({'grid-template-columns': `80px repeat(${this.sequencerLength}, 1fr)`})}>
                         <div class="sequencer-header-label"></div>
-                        ${Array.from({ length: 16 }).map((_, i) => html`
+                        ${Array.from({ length: this.sequencerLength }).map((_, i) => html`
                             <div class="sequencer-header-step ${Math.floor(i / 4) % 2 === 1 ? 'beat-group-alt' : ''}">
                                 ${i + 1}
                             </div>
