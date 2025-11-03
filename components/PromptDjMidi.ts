@@ -758,7 +758,7 @@ export class MusicStudio extends LitElement {
   @state() private scale = 'Major';
   
   @state() private beatmakerIsPlaying = false;
-  @state() private beatmakerTempo = 120;
+  @state() private beatmakerTempo = 80;
   @state() private beatmakerVolume = 1;
   @state() private currentStep = -1;
   @state() private sequencerLength: 4 | 8 | 16 = 8;
@@ -853,7 +853,7 @@ export class MusicStudio extends LitElement {
   }
   
   private updateBeatmakerTempo(newTempo: number) {
-    this.beatmakerTempo = Math.max(60, Math.min(180, newTempo));
+    this.beatmakerTempo = Math.max(40, Math.min(180, newTempo));
     this.drumMachine.setTempo(this.beatmakerTempo);
   }
 
@@ -1165,7 +1165,7 @@ export class MusicStudio extends LitElement {
                                 <button class="tempo-btn" @click=${this.handleBeatmakerTempoDecrement} aria-label="Decrease beatmaker tempo">-</button>
                                 <span class="control-value">${this.beatmakerTempo} BPM</span>
                                 <button class="tempo-btn" @click=${this.handleBeatmakerTempoIncrement} aria-label="Increase beatmaker tempo">+</button>
-                                <input type="range" id="beatmaker-tempo" min="60" max="180" .value=${this.beatmakerTempo} @input=${this.handleBeatmakerTempoChange}>
+                                <input type="range" id="beatmaker-tempo" min="40" max="180" .value=${this.beatmakerTempo} @input=${this.handleBeatmakerTempoChange}>
                             </div>
                             <div class="control-group" style="margin-left: auto;">
                                 <button class="action-button" @click=${this.handleGeneratePattern}>Generate</button>
