@@ -92,12 +92,23 @@ export class MusicStudio extends LitElement {
       position: relative;
     }
     
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(359deg); }
+    }
+
     #app-menu {
       display: flex;
       justify-content: center;
-      gap: 10px;
+      align-items: center;
+      gap: 15px;
       padding: 20px 0 10px;
       flex-shrink: 0;
+    }
+
+    .view-switcher-container {
+      display: flex;
+      gap: 10px;
     }
 
     .menu-btn {
@@ -122,6 +133,44 @@ export class MusicStudio extends LitElement {
       color: #0D0B12;
       font-weight: 600;
       box-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+    }
+
+    .global-play-pause-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+    .global-play-pause-btn:hover:not(:disabled) {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+    }
+    .global-play-pause-btn.playing {
+        background: rgba(255, 255, 255, 0.2);
+        box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+    }
+    .global-play-pause-btn:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+    }
+
+    .spinner {
+        animation: spin 1s linear infinite;
+        transform-origin: center;
+    }
+    .spinner circle {
+        stroke-dasharray: 80;
+        stroke-dashoffset: 60;
+        stroke-linecap: round;
+        stroke: white;
     }
 
     #launchpad-player {
@@ -687,17 +736,8 @@ export class MusicStudio extends LitElement {
     (this as any).dispatchEvent(new CustomEvent('play-pause'));
   }
 
-  private async updateMusicalContext() {
+  private updateMusicalContext() {
     this.dispatchPromptsChanged();
-    // If we are already playing, we need to briefly pause and resume to apply
-    // the new musical context to the live music session.
-    if (this.playbackState === 'playing') {
-      const wasPlaying = true;
-      (this as any).dispatchEvent(new CustomEvent('play-pause', { detail: { shouldPause: true } }));
-      // Give a moment for the pause to register
-      await new Promise(resolve => setTimeout(resolve, 50));
-      (this as any).dispatchEvent(new CustomEvent('play-pause', { detail: { shouldPlay: wasPlaying } }));
-    }
   }
 
   private updateLaunchpadTempo(newTempo: number) {
@@ -838,6 +878,16 @@ export class MusicStudio extends LitElement {
 
   private renderBeatmakerPauseIcon() {
       return svg`<svg viewBox="0 0 24 24" width="20" height="20"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" fill="white"/></svg>`;
+  }
+
+  private renderGlobalLaunchpadPlayIcon() {
+    if (this.playbackState === 'loading') {
+        return svg`<svg class="spinner" viewBox="0 0 24 24" width="20" height="20"><circle cx="12" cy="12" r="10" fill="none" stroke-width="3"></circle></svg>`;
+    } else if (this.playbackState === 'playing') {
+        return this.renderBeatmakerPauseIcon();
+    } else {
+        return this.renderBeatmakerPlayIcon();
+    }
   }
 
   private renderLaunchpadView() {
@@ -1026,14 +1076,29 @@ export class MusicStudio extends LitElement {
     return html`
       <nav id="app-menu">
         <button 
-            class="menu-btn ${classMap({ active: this.currentView === 'launchpad' })}" 
-            @click=${() => this.currentView = 'launchpad'}>
-            Launchpad
+            class="global-play-pause-btn ${classMap({playing: this.playbackState === 'playing'})}" 
+            @click=${this.handlePlayPause}
+            aria-label="Play or pause launchpad"
+            .disabled=${this.playbackState === 'loading'}>
+            ${this.renderGlobalLaunchpadPlayIcon()}
         </button>
+        <div class="view-switcher-container">
+            <button 
+                class="menu-btn ${classMap({ active: this.currentView === 'launchpad' })}" 
+                @click=${() => this.currentView = 'launchpad'}>
+                Launchpad
+            </button>
+            <button 
+                class="menu-btn ${classMap({ active: this.currentView === 'beatmaker' })}"
+                @click=${() => this.currentView = 'beatmaker'}>
+                Beatmaker
+            </button>
+        </div>
         <button 
-            class="menu-btn ${classMap({ active: this.currentView === 'beatmaker' })}"
-            @click=${() => this.currentView = 'beatmaker'}>
-            Beatmaker
+            class="global-play-pause-btn ${classMap({playing: this.beatmakerIsPlaying})}" 
+            @click=${this.toggleBeatmakerPlayback}
+            aria-label="Play or pause beatmaker">
+            ${this.beatmakerIsPlaying ? this.renderBeatmakerPauseIcon() : this.renderBeatmakerPlayIcon()}
         </button>
       </nav>
       <div id="studio-body">
