@@ -7,7 +7,7 @@ import './PlayPauseButton';
 import './PromptController';
 import './WeightKnob';
 
-import { css, html, LitElement, svg } from 'lit';
+import { css, html, LitElement, svg, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { map } from 'lit/directives/map.js';
 import { styleMap } from 'lit/directives/style-map.js';
@@ -296,6 +296,13 @@ export class MusicStudio extends LitElement {
       align-items: center;
       gap: 20px;
       width: 100%;
+    }
+
+    .view-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
     }
 
     .view-container h2 {
@@ -626,6 +633,91 @@ export class MusicStudio extends LitElement {
       opacity: 1;
     }
 
+    .help-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s;
+    }
+    .help-icon:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: scale(1.1);
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0s 0.3s;
+    }
+    .modal-overlay.visible {
+      opacity: 1;
+      visibility: visible;
+      transition: opacity 0.3s ease, visibility 0s 0s;
+    }
+    .modal-content {
+      background: rgba(28, 18, 41, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 18px;
+      padding: 25px 30px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      transform: scale(0.95);
+      transition: transform 0.3s ease;
+    }
+    .modal-overlay.visible .modal-content {
+      transform: scale(1);
+    }
+    .modal-content h3 {
+      margin-top: 0;
+      font-size: 1.8em;
+      background: linear-gradient(45deg, #ff25f6, #2af6de);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .modal-content p, .modal-content li {
+      line-height: 1.6;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.95em;
+    }
+    .modal-content ul {
+      padding-left: 20px;
+    }
+    .modal-content strong {
+      color: white;
+      font-weight: 600;
+    }
+    .modal-close-btn {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      font-size: 1em;
+      font-weight: 600;
+    }
+
+
     @media (max-width: 768px) {
         #launchpad-controls {
             flex-direction: column;
@@ -681,6 +773,8 @@ export class MusicStudio extends LitElement {
 
   @state() private kitSize: 'simple' | 'extended' = 'simple';
   @state() private selectedKit: (typeof KITS)[number] = 'Electronic';
+  @state() private isHelpModalVisible = false;
+  @state() private helpModalContent: { title: string, content: TemplateResult } | null = null;
 
   private midiDispatcher = new MidiDispatcher();
   private drumMachine: DrumMachine;
@@ -872,6 +966,47 @@ export class MusicStudio extends LitElement {
     }
   }
 
+  private openHelpModal(view: 'launchpad' | 'beatmaker') {
+    if (view === 'launchpad') {
+        this.helpModalContent = {
+            title: 'Launchpad Guide',
+            content: html`
+                <p>The Launchpad is a real-time generative music tool. Blend different musical ideas together to create unique, evolving soundscapes.</p>
+                <ul>
+                    <li><strong>Pads:</strong> Each colored pad represents a musical style, instrument, or mood. Click a pad to activate it and add its sound to the mix.</li>
+                    <li><strong>Combining Pads:</strong> Activate multiple pads simultaneously to combine their characteristics. The AI will seamlessly blend them together.</li>
+                    <li><strong>Tempo, Key & Scale:</strong> Use the controls at the bottom to change the musical context. The music will adapt in real-time without stopping.</li>
+                    <li><strong>MIDI CC:</strong> Connect a MIDI controller and check the "MIDI CC" box to assign pads to physical knobs or faders for hands-on control.</li>
+                </ul>
+            `
+        };
+    } else {
+        this.helpModalContent = {
+            title: 'Beatmaker Guide',
+            content: html`
+                <p>The Beatmaker is a classic step sequencer for creating your own drum patterns. Lay down rhythms and choose from a variety of drum kits.</p>
+                <ul>
+                    <li><strong>Sequencer Grid:</strong> Each row is an instrument, and each column is a step in the beat. Click a square (step) to turn a note on or off for that instrument.</li>
+                    <li><strong>Controls:</strong>
+                        <ul>
+                            <li><strong>Kit/Sound:</strong> Change the style of drum sounds used in your beat.</li>
+                            <li><strong>Bars:</strong> Switch between 4, 8, or 16 steps to change the length of your loop.</li>
+                            <li><strong>Tempo & Volume:</strong> Adjust the speed and overall volume of your beat.</li>
+                            <li><strong>Generate:</strong> Instantly fills the sequencer with a random pre-made pattern to get you started.</li>
+                            <li><strong>Clear:</strong> Wipes the entire grid clean.</li>
+                        </ul>
+                    </li>
+                </ul>
+            `
+        };
+    }
+    this.isHelpModalVisible = true;
+  }
+
+  private closeHelpModal() {
+    this.isHelpModalVisible = false;
+  }
+
   private renderBeatmakerPlayIcon() {
       return svg`<svg viewBox="0 0 24 24" width="20" height="20"><path d="M8 5v14l11-7z" fill="white"/></svg>`;
   }
@@ -889,13 +1024,20 @@ export class MusicStudio extends LitElement {
         return this.renderBeatmakerPlayIcon();
     }
   }
+  
+  private renderHelpIcon(view: 'launchpad' | 'beatmaker') {
+    return html`<div class="help-icon" @click=${() => this.openHelpModal(view)}>?</div>`;
+  }
 
   private renderLaunchpadView() {
     const numBars = 80;
     const visualizerBars = Array(numBars).fill(0);
     return html`
         <div class="view-container">
-            <h2>Launchpad</h2>
+            <div class="view-header">
+              <h2>Launchpad</h2>
+              ${this.renderHelpIcon('launchpad')}
+            </div>
 
             <div id="launchpad-player">
                 <play-pause-button
@@ -979,7 +1121,10 @@ export class MusicStudio extends LitElement {
 
     return html`
         <div class="view-container">
-            <h2>Beatmaker</h2>
+            <div class="view-header">
+                <h2>Beatmaker</h2>
+                ${this.renderHelpIcon('beatmaker')}
+            </div>
             <div id="beatmaker">
                 <div class="beatmaker-controls">
                     <div class="beatmaker-controls-row-1">
@@ -1071,6 +1216,21 @@ export class MusicStudio extends LitElement {
     `;
   }
 
+  private renderHelpModal() {
+    if (!this.isHelpModalVisible || !this.helpModalContent) return '';
+    return html`
+        <div 
+            class="modal-overlay ${classMap({visible: this.isHelpModalVisible})}"
+            @click=${this.closeHelpModal}>
+            <div class="modal-content" @click=${(e: Event) => e.stopPropagation()}>
+                <h3>${this.helpModalContent.title}</h3>
+                ${this.helpModalContent.content}
+                <button class="action-button modal-close-btn" @click=${this.closeHelpModal}>Got it!</button>
+            </div>
+        </div>
+    `;
+  }
+
   // FIX: Removed 'override' keyword.
   render() {
     return html`
@@ -1105,6 +1265,7 @@ export class MusicStudio extends LitElement {
         ${this.currentView === 'launchpad' ? this.renderLaunchpadView() : this.renderBeatmakerView()}
       </div>
       <footer>Created for musicians by Noam Cohen.</footer>
+      ${this.renderHelpModal()}
     `;
   }
 }
