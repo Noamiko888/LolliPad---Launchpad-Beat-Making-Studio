@@ -99,11 +99,24 @@ export class MusicStudio extends LitElement {
 
     #app-menu {
       display: flex;
-      justify-content: center;
       align-items: center;
       gap: 15px;
-      padding: 20px 0 10px;
+      padding: 20px 20px 10px;
       flex-shrink: 0;
+      position: relative;
+      justify-content: center;
+    }
+
+    .app-logo {
+      position: absolute;
+      left: 20px;
+      font-weight: 800;
+      font-size: 20px;
+      background: linear-gradient(45deg, #ff25f6, #2af6de);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+      user-select: none;
     }
 
     .view-switcher-container {
@@ -744,6 +757,12 @@ export class MusicStudio extends LitElement {
             background: rgba(28, 18, 41, 0.9);
         }
     }
+    
+    @media (max-width: 600px) {
+      .app-logo {
+        display: none;
+      }
+    }
   `;
 
   @property({ type: String }) playbackState: PlaybackState = 'stopped';
@@ -1235,6 +1254,7 @@ export class MusicStudio extends LitElement {
   render() {
     return html`
       <nav id="app-menu">
+        <div class="app-logo">LolliPad</div>
         <button 
             class="global-play-pause-btn ${classMap({playing: this.playbackState === 'playing'})}" 
             @click=${this.handlePlayPause}

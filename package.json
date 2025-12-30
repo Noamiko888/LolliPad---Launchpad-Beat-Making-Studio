@@ -1,11 +1,11 @@
 {
-  "name": "lollipad---launchpad-&-beat-making-studio",
-  "private": true,
-  "version": "0.0.0",
+  "name": "lollipad-music-studio",
+  "version": "1.0.0",
+  "description": "LolliPad - Launchpad & Beat Making Studio",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -13,9 +13,7 @@
     "lit": "^3.3.0"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "typescript": "^5.2.0",
+    "vite": "^5.0.0"
   }
 }
